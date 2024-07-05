@@ -1,0 +1,24 @@
+{% extends "./template/base.html" %}
+
+{% load static %}
+
+{% block isi %}
+
+   <table class="dashboardTable">
+    {% csrf_token %}
+    <thead>
+        <tr>
+            <th>Nama Barang</th>
+            <th>Harga</th>
+            <th>Kategori</th>
+            <th>Stok</th>
+        </tr>
+    </thead>
+    <tbody>
+        
+    </tbody>
+   </table>
+   {% endblock isi %}
+   {% block js %}
+        <script src="{% static "js/dashboard.js" %}?2"></script>
+    {% endblock js %}

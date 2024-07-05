@@ -1,0 +1,35 @@
+{% extends "../template/base.html" %}
+
+{% load static %}
+
+{% block isi %}
+
+    {% csrf_token %}
+    <div class="row">
+        <div class="col">
+            <div class="mb-3">
+                <label for="nama_barang" class="form-label">Nama Barang</label>
+                <input type="text" class="form-control" required id="nama_barang">
+              </div>
+        </div>
+        <div class="col">
+            <div class="mb-3">
+              <label for="harga_barang" class="form-label">Harga Barang</label>
+              <input type="text" class="form-control" required id="harga_barang">
+            </div>
+        </div>
+    </div>
+      <label for="Kategori">Kategori</label>
+      <select class="form-select mt-1" id="kategori" name="kategori" aria-label="Default select example">
+        <option value="" selected>Select Kategori</option>
+        {% for dt in data %}
+            <option value="{{dt.pk}}">{{dt.kategori}}</option>
+        {% endfor %}
+      </select>
+      <div class="w-full flex justify-end">
+          <button id="tambahBarang" class="btn btn-primary mt-2">Tambah</button>
+      </div>
+   {% endblock isi %}
+   {% block js %}
+        <script src="{% static "js/barang.js" %}?3"></script>
+    {% endblock js %}

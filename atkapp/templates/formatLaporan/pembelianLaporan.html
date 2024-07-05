@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css"
+      integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N"
+      crossorigin="anonymous"
+    />
+    <title>Document</title>
+  </head>
+  <body>
+    <p style="text-align: center"><strong>Laporan Pembelian</strong></p>
+    <table style="width: 100%" border="1">
+      <tbody>
+        <tr>
+          <th align="center" class="">Tanggal Pembelian</th>
+          <th>Nama Barang</th>
+          <th align="center">Harga</th>
+          <th align="center">Qty</th>
+          <th align="center">Sub Total</th>
+        </tr>
+        {% for dt in data %}
+        <tr>
+          <td align="center" style="height: 1.5em; padding-left: 0.5em">
+            {{dt.tgl_beli}}
+          </td>
+          <td style="height: 1.5em; padding-left: 0.5em">{{dt.barang}}</td>
+          <td align="right" style="height: 1.5em; padding-left: 0.5em">
+            {{dt.harga}}
+          </td>
+          <td align="right" style="height: 1.5em; padding-left: 0.5em">
+            {{dt.qty}}
+          </td>
+          <td align="right" style="height: 1.5em; padding-left: 0.5em">
+            {{dt.subTotal}}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <th colspan="4" align="right">Total</th>
+        <th align="center">Rp {{total}}</th>
+      </tfoot>
+    </table>
+    <footer style="margin-top: 200px">TTD</footer>
+  </body>
+</html>

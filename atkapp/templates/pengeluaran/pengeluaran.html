@@ -1,0 +1,261 @@
+{% extends "../template/base.html" %}
+
+{% load static %}
+
+{% block isi %}
+<div class="msg mb-5"></div>
+<p id="msg"></p>
+<div class="w-full flex justify-between">
+  <div class="flex gap-2">
+    <button href="" class="btn btn-secondary position-relative" id="postingAdd" data-bs-toggle="modal" data-bs-target="#posting">
+      Posting
+      <span class="position-absolute top-0 start-100 count-tPengeluaran translate-middle badge rounded-pill bg-danger">
+        0
+      </span>
+    </button>
+    <span class="flex flex-wrap items-center gap-x-1 text-sm text-gray-600 dark:text-neutral-400">
+      <kbd class="min-h-[30px] inline-flex justify-center items-center py-1 px-1.5 bg-gray-200 font-mono text-sm text-gray-800 rounded-md">
+        alt
+      </kbd>
+      +
+      <kbd class="min-h-[30px] inline-flex justify-center items-center py-1 px-1.5 bg-gray-200 font-mono text-sm text-gray-800 rounded-md">
+        p
+      </kbd>
+    </span>
+  </div>
+
+  <div class="flex gap-2">
+    <span class="flex flex-wrap items-center gap-x-1 text-sm text-gray-600 dark:text-neutral-400">
+      <kbd class="min-h-[30px] inline-flex justify-center items-center py-1 px-1.5 bg-gray-200 font-mono text-sm text-gray-800 rounded-md">
+        alt
+      </kbd>
+      +
+      <kbd class="min-h-[30px] inline-flex justify-center items-center py-1 px-1.5 bg-gray-200 font-mono text-sm text-gray-800 rounded-md">
+        a
+      </kbd>
+    </span>
+    <button href="" class="btn btn-primary" id="buttonAdd" data-bs-toggle="modal" data-bs-target="#modalAddTPengeluaran">Add Pengeluaran</button>
+  </div>
+</div>
+<div class="w-full overflow-x-auto">
+  <table class="tablePengeluaran cell-border">
+   {% csrf_token %}
+   <thead>
+       <tr>
+           <th>Tanggal Pengeluaran</th>
+           <th>Nama Barang</th>
+           <th>Harga Barang</th>
+           <th>Katgori</th> 
+           <th>Counter</th>
+           <th>Person</th>
+           <th>Qty</th> 
+           <th>Aksi</th>
+       </tr> 
+   </thead>
+   <tbody>
+       
+   </tbody>
+  </table>
+</div>
+
+
+   <div class="modal fade" id="modalEditPengeluaran" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="msgModalTambah"></div>
+          <div class="mb-3">
+            <label for="tgl_keluar" class="form-label" class="capitalize">Tanggal Pengeluaran</label>
+            <input type="datetime-local" required class="form-control" id="tgl_keluarEdit">
+          </div>
+          <div class="mb-3">
+            <label for="barang" class="capitalize mb-[8px]">barang</label>
+            <select class="normalize editSelectBarang" required id="barangEdit" name="barang" aria-label="Default select example">
+              <option selected value="">Open this select menu</option>
+              {% for b in barang %}
+               <option value="{{b.pk}}">{{b.barang}}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="counter" class="capitalize mb-[8px]">counter</label>
+            <select class="normalize editSelect" required id="counterEdit" name="counter" aria-label="Default select example">
+              <option selected value="">Open this select menu</option>
+              {% for b in counter %}
+               <option value="{{b.pk}}">{{b.counter_bagian}}</option>
+              {% endfor %}
+            </select>
+            </span>
+          </div>
+          <div class="mb-3">
+            <label for="person" class="capitalize mb-[8px]">person</label>
+            <select class="normalize editSelect" required id="personEdit" name="person" aria-label="Default select example">
+              <option selected value="">Open this select menu</option>
+              {% for b in person %}
+               <option value="{{b.pk}}">{{b.nama}}</option>
+              {% endfor %}
+            </select>
+            </span>
+          </div>
+          <div class="mb-3">
+            <label for="qty" class="form-label" class="capitalize">qty</label>
+            <input type="number" required class="form-control" id="qtyEdit">
+            <input type="hidden" name="id" id="idEdit">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" id="editPengeluaran">Save changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modalEditTPengeluaran" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="msgModaEdit"></div>
+          <div class="mb-3">
+            <label for="tgl_keluar" class="form-label" class="capitalize">Tanggal Pengeluaran</label>
+            <input type="datetime-local" required class="form-control" id="tgl_keluarTEdit">
+          </div>
+          <div class="mb-3">
+            <label for="barang" class="capitalize mb-[8px]">barang</label>
+            <select class="normalize" required id="barangTEdit" name="barang" aria-label="Default select example">
+              <option selected  value="">Open this select menu</option>
+              {% for b in barang %}
+               <option value="{{b.pk}}">{{b.barang}}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="counter" class="capitalize mb-[8px]">counter</label>
+            <select class="normalize" required id="counterTEdit" name="counter" aria-label="Default select example">
+              <option selected value="">Open this select menu</option>
+              {% for b in counter %}
+               <option value="{{b.pk}}">{{b.counter_bagian}}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="person" class="capitalize mb-[8px]">person</label>
+            <select class="normalize" required id="personTEdit" name="person" aria-label="Default select example">
+              <option selected value="">Open this select menu</option>
+              {% for b in person %}
+               <option value="{{b.pk}}">{{b.nama}}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="qty" class="form-label" class="capitalize">qty</label>
+            <input type="number" required class="form-control" id="qtyTEdit">
+            <input type="hidden" required class="form-control" id="idTEdit">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" id="editTPengeluaran">Edit</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal fade" id="modalAddTPengeluaran" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="exampleModalLabel">Add Pengeluaran</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+          <div class="msgModalTambah"></div>
+          <div class="mb-3">
+            <label for="tgl_keluar" class="form-label" class="capitalize">Tanggal Pengeluaran</label>
+            <input type="datetime-local" required class="form-control" id="tgl_keluarAdd">
+          </div>
+          <div class="mb-3">
+            <label for="barang" class="capitalize mb-[8px]">barang</label>
+            <select class="normalize" required id="barangAdd" name="barang" aria-label="Default select example">
+              <option selected  value="">Open this select menu</option>
+              {% for b in barang %}
+               <option value="{{b.pk}}">{{b.barang}}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="counter" class="capitalize mb-[8px]">counter</label>
+            <select class="normalize AddSelect" required id="counterAdd" name="counter" aria-label="Default select example">
+              <option selected value="">Open this select menu</option>
+              {% for b in counter %}
+               <option value="{{b.pk}}">{{b.counter_bagian}}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="person" class="capitalize mb-[8px]">person</label>
+            <select class="normalize AddSelect" required id="personAdd" name="person" aria-label="Default select example">
+              <option selected value="">Open this select menu</option>
+              {% for b in person %}
+               <option value="{{b.pk}}">{{b.nama}}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="qty" class="form-label" class="capitalize">qty</label>
+            <input type="number" required class="form-control" id="qtyAdd">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" id="addPengeluaran">Add</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal modal-lg fade" id="posting" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="staticBackdropLabel"><strong>Posting Pengeluaran</strong></h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <table class="tableTPengeluaran cell-border" id="tableTPengeluaran">
+            <thead>
+                <tr>
+                    <th>Select</th>
+                    <th>Tanggal Pengeluaran</th>
+                    <th>Nama Barang</th>
+                    <th>Harga Barang</th>
+                    <th>Counter</th>
+                    <th>Person</th>
+                    <th>Qty</th> 
+                    <th>Aksi</th>
+                </tr> 
+            </thead>
+            <tbody>
+                
+            </tbody>
+           </table> 
+        </div>
+        <div class="modal-footer">
+            <button href="" class="btn btn-primary mx-[10px]" id="buttonPostSelect">Post Selected Row</button>
+            <button href="" class="btn btn-warning text-white" id="buttonPostAll">Post All</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+   {% endblock isi %}
+   {% block js %}
+        <script src="{% static "js/tablepengeluaran.js" %}?878374"></script>
+    {% endblock js %}

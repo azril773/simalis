@@ -1,0 +1,111 @@
+{% extends "../template/base.html" %}
+
+{% load static %}
+
+{% block isi %}
+<span id="msg"></span>
+<div class="w-full flex justify-end gap-3">
+  <span class="flex flex-wrap items-center gap-x-1 text-sm text-gray-600 dark:text-neutral-400">
+    <kbd class="min-h-[30px] inline-flex justify-center items-center py-1 px-1.5 bg-gray-200 font-mono text-sm text-gray-800 rounded-md">
+      alt
+    </kbd>
+    +
+    <kbd class="min-h-[30px] inline-flex justify-center items-center py-1 px-1.5 bg-gray-200 font-mono text-sm text-gray-800 rounded-md">
+      a
+    </kbd>
+  </span>
+  <button href="" class="btn btn-primary" id="buttonAddModal" data-bs-toggle="modal" data-bs-target="#addModalBarang">Add Barang</button>
+</div>
+{% if messages %}
+<ul class="messages">
+    {% for message in messages %}
+    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+<div class="w-full overflow-x-auto">
+  <table class="tableBarang cell-border">
+   {% csrf_token %}
+   <thead>
+       <tr>
+           <th>Nama Barang</th>
+           <th>Harga</th>
+           <th>Kategori</th>
+           <th>Stok</th>
+           <th>Status</th>
+           <th>Aksi</th>
+       </tr>
+   </thead>
+   <tbody>
+       
+   </tbody>
+  </table>
+</div>
+   <div class="modal fade" id="addModalBarang" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="exampleModalLabel">Tambah Barang</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="nama_barangAdd" class="form-label">Nama Barang</label>
+            <input type="text" class="form-control" id="nama_barangAdd">
+          </div>
+          <label for="KategoriAdd">Kategori</label>
+          <select class="normalize mt-1" id="kategoriAdd" name="kategoriAdd" aria-label="Default select example">
+            <option selected value="">Open this select menu</option>
+            {% for k in kategori %}
+              <option value="{{k.pk}}">{{ k.kategori }}</option>
+            {% endfor %}
+          </select>
+          <div class="mb-3">
+            <label for="harga_barangAdd" class="form-label">Harga Barang</label>
+            <input type="text" max class="form-control" id="harga_barangAdd">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" id="buttonAddBarang">Save changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+   <div class="modal fade" id="editModalBarang" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <span id="msgEdit"></span>
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="exampleModalLabel">Edit Barang</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="nama_barangEdit" class="form-label">Nama Barang</label>
+            <input type="text" class="form-control" id="nama_barangEdit">
+          </div>
+          <div class="mb-3">
+            <label for="harga_barangEdit" class="form-label">Harga Barang</label>
+            <input type="text" class="form-control" id="harga_barangEdit" disabled>
+            <input type="hidden" name="id" id="idEdit">
+          </div>
+          <label for="kategoriEdit">KategoriEdit</label>
+          <select class="normalize mt-1 mb-3" id="kategoriEdit" name="kategoriEdit" aria-label="Default select example">
+            <option selected value="">Open this select menu</option>
+            {% for k in kategori %}
+              <option value="{{k.pk}}">{{ k.kategori }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" id="buttonEditBarang">Save changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+   {% endblock isi %}
+   {% block js %}
+        <script src="{% static "js/tablebarang.js" %}?92398"></script>
+    {% endblock js %}
