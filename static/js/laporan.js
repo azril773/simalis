@@ -52,7 +52,7 @@ new DataTable(".tableLaporan", {
             return `<span class="text-danger">Koreksi Pengeluaran</span>`;
             break;
           case 5:
-            return `<span class="text-warning">Stok Awal</span>`;
+            return `<span>Stok Awal</span>`;
             break;
           default:
             break;
