@@ -647,6 +647,12 @@ def tambahPostPembelian(r):
         except:
             messages.add_message(r,messages.ERROR," Kategori Barang "+tp.master_barang_id.barang+" sudah tidak aktif!")
             continue
+
+        s = Stok_brg()
+        if Stok_brg.objects.filter(master_barang_id__id=brg.pk).exists():
+            s.kode = 1
+        else:
+            s.kode = 5
         if tp.harga > brg.harga:
             brg.harga = tp.harga
         brg.status = "AC"
@@ -657,7 +663,6 @@ def tambahPostPembelian(r):
         p.qty = tp.qty
         p.master_barang_id = brg
         get = Stok_brg.objects.filter(master_barang_id=brg.pk).last()
-        s = Stok_brg()
         s.qty_terima = tp.qty
         s.qty_keluar = 0
 
@@ -668,7 +673,6 @@ def tambahPostPembelian(r):
             s.stok = int(get.stok) + int(tp.qty)
 
         
-        s.kode = 1
         s.person = r.user
         s.tgl_transaksi = tp.tgl_beli
         s.master_barang_id = brg
