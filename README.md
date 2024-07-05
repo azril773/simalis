@@ -13,7 +13,8 @@ pip install pdfkit mysqlclient
 ## Install wkhtmltopdf
 
 ```bahs
-# ubuntu
+#ubuntu
+
 sudo dpkg -i wkhtmltopdf.deb
 ```
 
