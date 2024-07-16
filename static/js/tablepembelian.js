@@ -85,7 +85,25 @@ const table = new DataTable(".tablePembelian", {
         )}</p></span>`;
       },
     },
-    { data: "qty" },
+    {
+      data: "harga_jual",
+      render: function (data, type, row, meta) {
+        const numberFormat = parseInt(data).toLocaleString("id-ID", {
+          currency: "IDR",
+          style: "currency",
+        });
+        return `<span class="w-full"><p class="text-end">${numberFormat.replace(
+          ",00",
+          ""
+        )}</p></span>`;
+      },
+    },
+    { data: "qty", 
+      render:(d,t,r,m) => {
+        const qty = formatHrg(d)
+        return qty
+      }
+    },
     {
       data: "subTotal",
       render: function (data, type, row, meta) {
@@ -126,10 +144,17 @@ const barangTAddSelectize = $("#barangAdd").selectize({
 
 const barangTEditSelectize = $("#barangTEdit").selectize({
   maxOptions: 5,
+  onChange:function(e){
+    $("#hargaTEdit").focus()
+  }
 });
 
 const barangEdit = $("#barangEdit").selectize({
   maxOptions: 5,
+  onChange:function(e){
+    console.log("ok")
+    $("#hargaEdit").focus()
+  }
 });
 
 $("#modalAddTPembelian").on("show.bs.modal", function (e) {
@@ -137,9 +162,7 @@ $("#modalAddTPembelian").on("show.bs.modal", function (e) {
   console.log(date);
   $("#tgl_beliAdd").val(date);
 
-  barangTAddSelectize[0].selectize.clear();
-  $("#hargaAdd").val("");
-  $("#qtyAdd").val("");
+  
   setTimeout(() => {
     barangTAddSelectize[0].selectize.focus();
   }, 500);
@@ -188,10 +211,12 @@ $("table").click(function (e) {
         //   },500);
         setTimeout(() => {
           $("#hargaEdit").focus();
+          $("#hargaEdit").select();
         }, 500);
         $("#hargaEdit").on("keydown", function (e) {
           if (e.key == "Enter") {
             $("#qtyEdit").focus();
+            $("#qtyEdit").select();
           }
         });
 
@@ -221,7 +246,7 @@ $("#editPembelian").click(function (e) {
       editModalIn.hide();
       table.ajax.reload();
     },
-    error:(err) => {
+    error: (err) => {
       if (err.responseJSON) {
         Swal.fire({
           icon: "error",
@@ -229,7 +254,7 @@ $("#editPembelian").click(function (e) {
           html: err.responseJSON.message,
         });
       }
-    }
+    },
   });
 });
 
@@ -251,8 +276,13 @@ function changeBarangSelectize(id) {
         format = "Rp 0";
       }
       $(".hargaSeb").html(format);
+      $("#hargaAdd").val(format.replace(/Rp/g,'').split(',')[0]);
 
       $("#hargaAdd").focus();
+      setTimeout(() => {
+        $("#hargaAdd").select();
+
+      }, 100);
     },
   });
 }
@@ -261,59 +291,26 @@ $("#hargaAdd")
   .off("keydown")
   .on("keydown", function (e) {
     if (e.key == "Enter") {
-      $("#qtyAdd").focus();
       setTimeout(() => {
-        $("#qtyAdd")
-          .off("keydown")
-          .on("keydown", function (e) {
-            if (e.key == "Enter") {
-              console.log("dalam");
-              $("#addPembelian").click();
-              return;
-            }
-          });
-      }, 500);
+        $("#qtyAdd").focus();
+        $("#qtyAdd").select();
+      }, 50);
     }
   });
 
-$("#addPembelian").on("click", function (e) {
-  const tgl_beli = $("#tgl_beliAdd").val();
-  const date = new Date(tgl_beli).toLocaleDateString("id-ID", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-  });
-  const format = moment(date.split(",").join(""), "DD/MM/YYYY HH.mm.SS").format(
-    "YYYY-MM-DD HH:mm:SS"
-  );
-  const barang = $("#barangAdd").val();
-  console.log(barang);
-  const harga = $("#hargaAdd").val().split(".").join("");
-  const qty = $("#qtyAdd").val().split(".").join("");
-  $.ajax({
-    url: `${ip}/atk/tambahTPembelian/`,
-    method: "post",
-    data: { tgl_beli: format, barang, harga, qty },
-    headers: { "X-CSRFToken": token },
-    success: (e) => {
-      tableT.ajax.reload();
-      modalAddT.hide();
-      getTPembelian();
-    },
-    error:(err) => {
-      if (err.responseJSON) {
-        Swal.fire({
-          icon: "error",
-          title: "Error",
-          html: err.responseJSON.message,
-        });
-      }
+
+$("#qtyAdd")
+  .off("keydown")
+  .on("keydown", function (e) {
+    if (e.key == "Enter") {
+      console.log("dalam");
+      $("#addPembelian").click();
+      return;
     }
   });
-});
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 const tableT = new DataTable(".tableTPembelian", {
   order: [[1, "desc"]],
@@ -363,6 +360,16 @@ const tableT = new DataTable(".tableTPembelian", {
         return `<span>${numberFormat}</span>`;
       },
     },
+    {
+      data: "barang.fields.harga_jual",
+      render: function (data, type, row, meta) {
+        const numberFormat = parseInt(data).toLocaleString("id-ID", {
+          currency: "IDR",
+          style: "currency",
+        });
+        return `<span>${numberFormat}</span>`;
+      },
+    },
     { data: "tPembelian.fields.qty" },
     {
       data: "tPembelian.fields.subTotal",
@@ -386,11 +393,59 @@ const tableT = new DataTable(".tableTPembelian", {
   ],
 });
 
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+$("#addPembelian").on("click", function (e) {
+  const tgl_beli = $("#tgl_beliAdd").val();
+  const date = new Date(tgl_beli).toLocaleDateString("id-ID", {
+    day: "2-digit",
+  month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
+  const format = moment(date.split(",").join(""), "DD/MM/YYYY HH.mm.SS").format(
+    "YYYY-MM-DD HH:mm:SS"
+  );
+  const barang = $("#barangAdd").val();
+  console.log(barang);
+  const harga = $("#hargaAdd").val().split(".").join("");
+  const qty = $("#qtyAdd").val().split(".").join("");
+  $.ajax({
+    url: `${ip}/atk/tambahTPembelian/`,
+    method: "post",
+    data: { tgl_beli: format, barang, harga, qty },
+    headers: { "X-CSRFToken": token },
+    success: (e) => {
+      const qty = $("#qtyAdd").val("0");
+      $("#hargaAdd").val("0")
+      barangTAddSelectize[0].selectize.clear();
+      tableT.ajax.reload();
+      modalAddT.hide();
+      getTPembelian();
+    },
+    error: (err) => {
+      if (err.responseJSON) {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          html: err.responseJSON.message,
+        });
+      }
+    },
+  });
+});
+
 tableT.on("click", "tbody tr", async (e) => {
   // if($(e.target).is("td>span>a.deleteTButton")){
   //   console.log()
   // }
-  if (!$(e.target).is("input") && !$(e.target).is("td>span>a.editModalTButton") && !$(e.target).is("td>span>a.deleteTButton")) {
+  if (
+    !$(e.target).is("input") &&
+    !$(e.target).is("td>span>a.editModalTButton") &&
+    !$(e.target).is("td>span>a.deleteTButton")
+  ) {
     if ($(e.currentTarget).find("td:first").find("input").prop("checked")) {
       $(e.currentTarget).find("td:first").find("input").prop("checked", false);
     } else {
@@ -476,10 +531,12 @@ tableT.on("click", "tbody tr", async function (e) {
     $("#hargaTEdit").val(harga);
     setTimeout(() => {
       $("#hargaTEdit").focus();
+      $("#hargaTEdit").select();
     }, 500);
     $("#hargaTEdit").on("keydown", function (e) {
       if (e.key == "Enter") {
         $("#qtyTEdit").focus();
+        $("#qtyTEdit").select();
       }
     });
     $("#qtyTEdit").on("keydown", function (e) {
@@ -497,17 +554,17 @@ tableT.on("click", "tbody tr", async function (e) {
       .split(",")[0];
     $("#qtyTEdit").val(qty);
     $("#idTEdit").val(data.data.pk);
-  }else{
+  } else if($(e.target).is("td>span>a.deleteTButton")) {
     $.ajax({
-      url:`${ip}/atk/deleteTPembelian/`,
-      method:"post",
-      data:{id},
-      headers:{"X-CSRFToken":token},
-      success:(e) => {
-        tableT.ajax.reload()
-        getTPembelian()
-      }
-    })
+      url: `${ip}/atk/deleteTPembelian/`,
+      method: "post",
+      data: { id },
+      headers: { "X-CSRFToken": token },
+      success: (e) => {
+        tableT.ajax.reload();
+        getTPembelian();
+      },
+    });
   }
 });
 
@@ -529,7 +586,7 @@ $("#editTPembelian").click(function () {
       modalEditT.hide();
       tableT.ajax.reload();
     },
-    error:(err) => {
+    error: (err) => {
       if (err.responseJSON) {
         Swal.fire({
           icon: "error",
@@ -537,9 +594,11 @@ $("#editTPembelian").click(function () {
           html: err.responseJSON.message,
         });
       }
-    }
+    },
   });
 });
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 $("#modalEditTPembelian").on("hide.bs.modal", function (e) {
   posting.show();
@@ -549,14 +608,17 @@ $("#hargaAdd").on("keyup", function (e) {
   formatInput(e, $(e.target).val());
 });
 
+
 $("#hargaEdit").on("keyup", function (e) {
   console.log(e.target.value);
   formatInput(e, e.target.value);
 });
 
+
 $("#hargaTEdit").on("keyup", function (e) {
   formatInput(e, $(e.target).val());
 });
+
 
 $("#qtyAdd").on("keyup", function (e) {
   formatInput(e, $(e.target).val());

@@ -5,28 +5,20 @@
       <label for="dateRangePembelian" class="mb-2 text-sm">Tanggal <b>Pembelian</b></label>
       <input type="text" name="daterange" id="dateRangePembelian" class="form-control w-full" />
       </div>
-      <div class="w-full">
-          <label for="itemPembelian" class="mb-2 text-sm">Nama Item</label>
-          <select name="itemPembelian" id="itemPembelian" class="normalize">
-            <option value="">Pilih Item</option>
-            {% for b in barang %}
-              <option value="{{b.barang}}">{{ b.barang }}</option>
-            {% endfor %}
-          </select>
-  </div>
   <div class="w-full">
       <button id="searchPembelian" class="btn btn-primary mt-8">Cari</button>
   </div>
 </div>
 <div class="mb-10">
   <div class="w-full overflow-x-auto">
-    <table class="cell-border" id="pembelian">
+    <table class="cell-border" id="pembelian" style="width: 100%;">
         {% csrf_token %}
         <thead>
           <tr>
             <th>Tanggal Pembelian</th>
             <th>Nama Barang</th>
-            <th>Harga</th>
+            <th>Harga Beli</th>
+            <th>Harga Jual</th>
             <th>Qty</th>
             <th>Sub Total</th>
           </tr>
@@ -34,7 +26,7 @@
         <tbody></tbody>
         <tfoot>
           <tr>
-            <th colspan="4" style="text-align:right">Total:</th>
+            <th colspan="5" style="text-align:right">Total:</th>
             <th style="text-align:right"></th>
         </tr>
         </tfoot>
@@ -50,37 +42,20 @@
         <label for="dateRangePengeluaran" class="mb-2 text-sm -mt-5">Tanggal <b>Pengeluaran</b></label>
         <input type="text" name="daterange" id="dateRangePengeluaran" class="form-control w-full" />
         </div>
-        <div class="w-full">
-          <label for="itemPengeluaran" class="mb-2 text-sm">Nama Item</label>
-          <select name="itemPengeluaran" id="itemPengeluaran" class="normalize">
-            <option value="">Pilih Item</option>
-            {% for b in barang %}
-              <option value="{{b.barang}}">{{ b.barang }}</option>
-            {% endfor %}
-          </select>
-    </div>
-    <div class="w-full justify-between">
-      <label for="spgAll" class="mb-2 text-sm">Pilih Counter</label>
-          <select name="spgAll" id="spgAll" class="normalize">
-            <option value="">Pilih Counter</option>
-            <option  value="all">Semua</option>
-            {% for c in counter %}
-              <option value="{{c.pk}}" data-id={{c.counter_bagian}}>{{ c.counter_bagian }}</option>
-            {% endfor %}
-          </select>
-      </div>
     <div class="w-full">
         <button id="searchPengeluaran" class="btn btn-primary mt-8">Cari</button>
     </div>
 </div>
 <div class="mb-10">
   <div class="w-full overflow-x-auto">
-    <table class="cell-border w-full" id="pengeluaran">
+    <table class="cell-border w-full" id="pengeluaran" style="width: 100%;">
         {% csrf_token %}
         <thead>
           <tr>
             <th>Tanggal Pengeluaran</th>
             <th>Nama Barang</th>
+            <th>Harga Beli</th>
+            <th>Harga Jual</th>
             <th>Qty</th>
             <th>Counter Bagian</th>
             <th>Personal</th>
@@ -89,25 +64,6 @@
         <tbody></tbody>
         <tfoot>
 
-        </tfoot>
-      </table>
-      <table class="cell-border hidden" id="pengeluaranSpg">
-        {% csrf_token %}
-        <thead>
-          <tr>
-            <th>Tanggal Pengeluaran</th>
-            <th>Nama Barang</th>
-            <th>Harga Barang</th>
-            <th>Qty</th>
-            <th>Counter Bagian</th>
-            <th>Personal</th>
-            <th>Sub Total</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-        <tfoot>
-          <th colspan="6" style="text-align:right">Total</th>
-          <th>Lorem, ipsum.</th>
         </tfoot>
       </table>
   </div>
@@ -118,7 +74,28 @@
 </div>
 <hr class="mb-10">
 
+<div class="mb-3 w-full flex justify-start gap-2">
+    <div class="w-full flex justify-between gap-3">
+      <div class="w-full">
+        <label for="bulan" class="mb-2 text-sm -mt-5">Bulan</label>
+        <select type="text" name="daterange" id="bulan">
+          <option value="" selected>Pilih Bulan</option>
+        </select>
+      </div>
+      <div class="w-full">
+        <label for="tahun" class="mb-2 text-sm -mt-5">Tahun</label>
+        <select type="text" name="daterange" id="tahun">
+          <option value="" selected>Pilih Tahun</option>
+        </select>
+      </div>
+    <div class="mt-4 w-full">
+      <button class="btn btn-warning mb-5" id="printPdfLaporan">Print PDF</button>
+    </div>
+  </div>
+</div>
+<hr class="mb-10">
+
 {% endblock isi %}
 {% block js %}
-    <script src="{% static "js/general_report.js" %}?938493"></script>
+    <script src="{% static "js/general_report.js" %}?9283983"></script>
 {% endblock js %}

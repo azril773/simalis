@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Stok_brg, Personal, Pengeluaran, Pembelian, Counter_bagian, Kategori_brg, Master_barang, Temporary_pembelian, Temporary_pengeluaran
+from .models import *
 from django.core.serializers import serialize # Create your views here.
 from django.http import JsonResponse, HttpResponse,FileResponse
 import json
@@ -9,16 +9,18 @@ from datetime import datetime
 from django.utils import timezone
 from django.contrib import messages
 from django.contrib.messages import get_messages
-from django.db.models import Q
+from django.db.models import Q, Sum, F
 from django.template.loader import get_template 
 from django.template import Context
 import pdfkit
 from django.core.files.base import ContentFile
 import os
 from django.http import StreamingHttpResponse
-from .forms import Barang_form
-from django.db import connection
-from django.db import transaction
+from django.db import transaction,connection
+import weasyprint
+import calendar
+
+bulanArr = ['Januari','Februari','Maret',"April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"]
 
 @login_required
 def loginDispatch(r):
@@ -39,6 +41,7 @@ def getBarang(r):
         obj["barang"] = {}
         obj["barang"]["nama_barang"] = b.barang
         obj["barang"]["harga"] = b.harga
+        obj["barang"]["harga_jual"] = b.harga_jual
         obj["kategori"] = k.kategori
         obj["aksi"] = b.pk
         obj["status"] = b.status
@@ -54,48 +57,47 @@ def getBarang(r):
 
 @login_required
 def barang(r):
-    barang = Barang_form()
     k = Kategori_brg.objects.all()
-    return render(r,"barang/barang.html",{'kategori':k,"form":barang}) 
+    return render(r,"barang/barang.html",{'kategori':k}) 
 
 @login_required
 def tambahBarang(r):
     if r.method == "POST":
-        barang = Barang_form(r.POST)
-        if barang.is_valid():
-            k = Kategori_brg.objects.get(pk=barang.cleaned_data["kategori"])
-            ceknama = Master_barang.objects.filter(barang=barang.cleaned_data["nama_barang"])
+        if r.POST.get("nama_barang") != "" and r.POST.get("harga_barang") != "" and r.POST.get("harga_jual") != "" and r.POST.get("kategori") != "":
+            nama = r.POST.get("nama_barang")
+            harga_jual = r.POST.get("harga_jual")
+            kategori = r.POST.get("kategori")
+            k = Kategori_brg.objects.get(pk=kategori)
+            ceknama = Master_barang.objects.filter(barang=nama)
             if ceknama:
                 return JsonResponse({"message":"nama barang sudah ada!"},status=400,safe=False)
             if k.status =="DC":
                 return JsonResponse({"message":"kategori tidak ada!"},status=400,safe=False)
             brg = Master_barang()
-            brg.barang = barang.cleaned_data["nama_barang"]
-            brg.harga = barang.cleaned_data["harga_barang"]
+            brg.barang = nama
+            brg.harga = 0
+            brg.harga_jual = harga_jual
             brg.kategori_id = k
             brg.save()
             return JsonResponse({"message":"success create barang"},status=200,safe=False)
-        else:
-            return redirect("barang")
     else:
         return redirect("barang")
 
 
 @login_required
 def editBarang(r):
-    if r.POST.get("id") != "" and r.POST.get("nama_barang") != "" and r.POST.get("harga_barang") != "" and r.POST.get("kategori") != "" :
+    if r.POST.get("id") != "" and r.POST.get("nama_barang") != "" and r.POST.get("harga_barang") != "" and r.POST.get("harga_jual") != "" and r.POST.get("kategori") != "" :
         id = r.POST.get("id")
         kategori = r.POST.get("kategori")
         nama_barang = r.POST.get("nama_barang")
-        harga_barang = r.POST.get("harga_barang")
-        print(nama_barang,harga_barang,id,kategori)
+        harga_jual = r.POST.get("harga_jual")
         try:
             k = Kategori_brg.objects.get(pk=kategori,status="AC")
         except:
             return JsonResponse({"message":"Kategori sudah tidak aktif!"},status=400,safe=False)
         brg = Master_barang.objects.get(pk=id)
         brg.barang = nama_barang
-        brg.harga = harga_barang
+        brg.harga_jual = harga_jual
         brg.kategori_id = k
         brg.save()
         msg = get_messages(r)
@@ -139,6 +141,7 @@ def getPembelian(r):
         obj["kategori"] = k.kategori
         obj["aksi"] = p.pk
         obj["harga"] = p.harga
+        obj["harga_jual"] = b.harga_jual
         obj["subTotal"] = int(p.harga) * int(p.qty)
         obj["qty"] = p.qty   
         obj["stok"] = stok.stok   
@@ -206,6 +209,7 @@ def editPembelian(r):
         date = r.POST.get("date")
         brg = r.POST.get("barang")
         harga = r.POST.get("harga")
+        hargaJual = r.POST.get("hargaJual")
         qty = r.POST.get("qty")
         with transaction.atomic():
             pembelian = Pembelian.objects.get(pk=id)
@@ -292,7 +296,7 @@ def getPembelianRange(r):
     start = r.POST.get("start")
     end = r.POST.get("end")
     item = r.POST.get("item")
-    if item != "":
+    if item:
         pembelian = Pembelian.objects.filter(tgl_beli__range=[start,end],master_barang_id__barang__icontains=item)
     else:
         pembelian = Pembelian.objects.filter(tgl_beli__range=[start,end])
@@ -305,6 +309,7 @@ def getPembelianRange(r):
         obj["qty"] = p.qty
         obj["subTotal"] = p.subTotal
         obj["barang"] = barang.barang
+        obj["harga_jual"] = barang.harga_jual
         data.append(obj)   
     # pdf = open("coba.pdf")
     # response = HttpResponse(pdf.read(), content_type='application/pdf')  # Generates the response as pdf response.
@@ -322,6 +327,7 @@ def getPengeluaran(r):
         b = Master_barang.objects.get(pk=p.master_barang_id.pk)
         k = Kategori_brg.objects.get(pk=b.kategori_id.pk)
         c = Counter_bagian.objects.get(pk=p.counter_id.pk)
+        d = Divisi.objects.get(pk=p.divisi.pk)
         person = None
         obj["barang"] = {}
         obj["person"] = None
@@ -330,16 +336,18 @@ def getPengeluaran(r):
             obj["person"] = person.nama
         stok = Stok_brg.objects.filter(master_barang_id=b.pk).last()
         obj["tgl_pengeluaran"] = p.tgl_keluar
+        obj["harga_jual"] = p.harga_jual
         obj["barang"]["nama_barang"] = b.barang
         obj["barang"]["harga"] = b.harga
         obj["kategori"] = k.kategori
         obj["counter"] = c.counter_bagian
+        obj["divisi"] = d.divisi
         obj["qty"] = p.qty
+        obj["status"] = p.status
         obj["aksi"] = p.pk
 
         obj["stok"] = stok.stok   
-        data.append(obj)
-
+        data.append(obj) 
     return JsonResponse({"data":data},status=200,safe=False)
 
 @login_required
@@ -347,8 +355,9 @@ def pengeluaran(r):
     barang = Master_barang.objects.filter(status="AC",kategori_id__status="AC")
     p = Personal.objects.filter(status="AC")
     c = Counter_bagian.objects.filter(status="AC")
+    d = Divisi.objects.filter(status="AC")
 
-    return render(r,"pengeluaran/pengeluaran.html",{"barang":barang,"person":p,"counter":c}) 
+    return render(r,"pengeluaran/pengeluaran.html",{"barang":barang,"person":p,"counter":c,'divisi':d}) 
 
 @login_required
 def tambahPengeluaran(r):
@@ -358,6 +367,7 @@ def tambahPengeluaran(r):
         counter = r.POST.get("counter")
         person = r.POST.get("person") 
         qty = r.POST.get("qty")
+        status = r.POST.get("status")
 
         # get model
         with transaction.atomic():
@@ -394,6 +404,7 @@ def tambahPengeluaran(r):
             pengeluaran.master_barang_id = brg
             pengeluaran.personal_id = prs
             pengeluaran.tgl_keluar = tgl_keluar
+            pengeluaran.status = status
             pengeluaran.save()
             stok.save()
 
@@ -412,12 +423,13 @@ def editPengeluaran(r):
         counter = r.POST.get("counter")
         person = r.POST.get("person") 
         qty = r.POST.get("qty")
+        status = r.POST.get("status")
         pengeluaran = Pengeluaran.objects.get(pk=id)
         try:
             brg = Master_barang.objects.get(pk=barang,kategori_id__status="AC")
         except:
             return JsonResponse({"message":"Barang sudah tidak aktif!"},status=400,safe=False)
-        ctr = Counter_bagian(pk=counter)
+        ctr = Counter_bagian.objects.get(pk=counter)
         person = Personal(pk=person)
         stk = Stok_brg.objects.filter(master_barang_id=brg).last()
         if not stk:
@@ -467,11 +479,22 @@ def editPengeluaran(r):
             stok.tgl_transaksi = datetime.now()
             stok.save() 
 
+        if status == '1':
+            if brg.harga_jual <= 0:
+                if pengeluaran.harga_jual <= 0:
+                    return JsonResponse({"message":"Barang ini tidak memiliki harga jual!"},status=400,safe=False)
+            else:
+                if pengeluaran.harga_jual <= 0:
+                    pengeluaran.harga_jual = brg.harga_jual
         pengeluaran.qty = qty
         pengeluaran.tgl_keluar = tgl_keluar
         pengeluaran.master_barang_id = brg
         pengeluaran.counter_id = ctr
+        print(ctr.divisi)
+        pengeluaran.divisi = ctr.divisi
         pengeluaran.personal_id = person
+        pengeluaran.status = status
+        pengeluaran.harga_jual = pengeluaran.harga_jual
         pengeluaran.save()
         brg.save()
         return JsonResponse({"message":"sdsd"},status=200)
@@ -485,9 +508,10 @@ def getPengeluaranById(r):
     if r.method == "POST":
         id = r.POST.get("id")
         p = Pengeluaran.objects.get(pk=id)
-        s = serialize("json",[p])
+        brg = Master_barang.objects.get(pk=p.master_barang_id.pk)
+        s = serialize("json",[p,brg])
         s = json.loads(s)
-        return JsonResponse({"data":s[0]},status=200,safe=False)
+        return JsonResponse({"data":s[0],"barang":s[1]},status=200,safe=False)
     else:
         k = Kategori_brg.objects.all()
         return render(r,"barang/tambahbarang.html",{"data":k}) 
@@ -499,8 +523,8 @@ def getPengeluaranRange(r):
     item = r.POST.get("item")
     spgAll = r.POST.get("spgAll")
     print(spgAll)
-    if item != "":
-        if spgAll != "":
+    if item:
+        if spgAll:
             # printA(spgAll)
             if spgAll == "all":
                 pengeluaran = Pengeluaran.objects.filter(~Q(counter_id__counter_bagian__iregex=r"spg|spg"),tgl_keluar__range=[start,end],master_barang_id__barang__icontains=item)
@@ -509,7 +533,7 @@ def getPengeluaranRange(r):
         else:
             pengeluaran = Pengeluaran.objects.filter(tgl_keluar__range=[start,end],master_barang_id__barang__icontains=item)
     else:
-        if spgAll != "":
+        if spgAll:
             if spgAll == "all":
                 pengeluaran = Pengeluaran.objects.filter(~Q(counter_id__counter_bagian__iregex=r"spg|spg"),tgl_keluar__range=[start,end])
             else:
@@ -528,6 +552,7 @@ def getPengeluaranRange(r):
             obj["nama_person"] = personal.nama
 
         obj["barang"] = barang.barang
+        obj["harga_jual"] = barang.harga_jual
         obj["harga"] = barang.harga
         obj["subTotal"] = int(p.qty) * int(barang.harga)
         obj["tgl_keluar"] = p.tgl_keluar
@@ -542,9 +567,10 @@ def getPersonById(r):
     if r.method == 'POST':
         id = r.POST.get("id")
         p = Personal.objects.get(pk=id)
-        s = serialize("json",[p])
+        c = Counter_bagian.objects.get(pk=p.counter_bagian_id.pk)
+        s = serialize("json",[p,c])
         s = json.loads(s)
-        return JsonResponse({"data":s[0]},status=200,safe=False)
+        return JsonResponse({"data":s},status=200,safe=False)
     else:
         return redirect(r,"pengeluaran")
 
@@ -566,7 +592,39 @@ def getLaporan(r):
         data.append(obj)
     return JsonResponse({"data":data},safe=False,status=200)
 
-
+@login_required
+def rangeHarian(r):
+    if r.headers["X-Requested-With"] == "XMLHttpRequest":
+        rangeHarian = r.POST.get("rangeHarian")
+        date = datetime.strptime(rangeHarian,'%Y-%m-%d')
+        data = Stok_brg.objects.raw("SELECT * FROM atkapp_stok_brg WHERE DAY(tgl_transaksi) = %s AND MONTH(tgl_transaksi) = %s AND YEAR(tgl_transaksi) = %s",[date.day,date.month,date.year])
+        result = []
+        for d in data:
+            try:
+                brg = Master_barang.objects.filter(pk=d.master_barang_id.pk).last()
+            except:
+                return JsonResponse({"data":[]},safe=False,status=200)
+            
+            obj = {
+                'laporan':{
+                    'tgl_transaksi':datetime.strftime(d.tgl_transaksi,"%Y-%m-%d %H:%M:%S"),
+                    'master_barang_id':d.master_barang_id.pk,
+                    'qty_terima':d.qty_terima,
+                    'qty_keluar':d.qty_keluar,
+                    'stok':d.stok,
+                    'kode':d.kode,
+                    'person':d.person,
+                    'created_at':datetime.strftime(d.created_at,"%Y-%m-%d %H:%M:%S"),
+                },
+                'barang':{
+                    'barang':brg.barang,
+                    'harga':brg.harga,
+                    'kategori_id':brg.kategori_id.pk,
+                    'status':brg.status,
+                }
+            }
+            result.append(obj)
+        return JsonResponse({"data":result},safe=False,status=200)
 
 @login_required
 def getTPembelian(r):
@@ -701,37 +759,41 @@ def pengeluaranT(r):
 def getTPengeluaran(r):
     tP = Temporary_pengeluaran.objects.all()
     data = []
-    for p in tP:
+    for p in tP: 
         brg = Master_barang.objects.get(pk=p.master_barang_id.pk)
         ctr = Counter_bagian.objects.get(pk=p.counter_id.pk)
+        dvs = Divisi.objects.get(pk=p.counter_id.divisi.pk)
         prs = None
         seri = None
         obj = {}
         if p.personal_id:
             prs = Personal.objects.get(pk=p.personal_id.pk)
-            seri = serialize("json",[p,brg,ctr,prs])
+            seri = serialize("json",[p,brg,ctr,dvs,prs])
             seri = json.loads(seri)
-            obj["person"] = seri[3]
+            obj["person"] = seri[4]
         else:
-            seri = serialize("json",[p,brg,ctr])
+            seri = serialize("json",[p,brg,ctr,dvs])
             seri = json.loads(seri)
             obj["person"] = None
         obj["tPengeluaran"] = seri[0] 
         obj["barang"] = seri[1]
         obj["counter"] = seri[2]
+        obj["divisi"] = seri[3]
         obj["aksi"] = p.pk
         data.append(obj)
-    
     return JsonResponse({"data":data},safe=False,status=200)
 
 @login_required
 def tambahTPengeluaran(r):
+    print(r.POST)
     if r.POST.get("tgl_keluar") != "" and r.POST.get("counter") != "" and r.POST.get("barang") != "" and r.POST.get("qty") != "":
         tgl_keluar = r.POST.get("tgl_keluar")
         brg = r.POST.get("barang")
         counter = r.POST.get("counter")
+        # divisi = r.POST.get("divisi")
         person = r.POST.get("person")
         qty = r.POST.get("qty")
+        status = r.POST.get("status")
         tp = Temporary_pengeluaran()
         try:
             barang = Master_barang.objects.get(pk=brg,kategori_id__status="AC")
@@ -753,13 +815,24 @@ def tambahTPengeluaran(r):
         tp.personal_id = prs
         try:
             c = Counter_bagian.objects.get(pk=counter,status="AC")
+            d = Divisi.objects.get(pk=c.divisi.pk,status="AC")
         except:
-            return JsonResponse({"message":"Counter sudah tidak aktif!"},status=400,safe=False)
+            return JsonResponse({"message":"Counter atau divisi sudah tidak aktif!"},status=400,safe=False)
+
+        if status == '1':
+            if barang.harga_jual <= 0:
+                return JsonResponse({"message":"Barang ini tidak memiliki harga jual!"},status=400,safe=False)
+
         tp.tgl_keluar = tgl_keluar
         tp.master_barang_id = barang
         tp.qty = qty
         tp.counter_id = c
-
+        tp.divisi = d
+        tp.status = status
+        if status == "0":
+            tp.harga_jual = 0
+        else:
+            tp.harga_jual = barang.harga_jual
         tp.save()
         return JsonResponse({"message":"success create temporary Pengeluaran!"},status=200,safe=False)
     else:
@@ -767,12 +840,13 @@ def tambahTPengeluaran(r):
 
 @login_required
 def editTPengeluaran(r):
-    if r.POST.get("id") != "" and r.POST.get("tgl_keluar") != "" and r.POST.get("counter") != "" and r.POST.get("barang") != "" and r.POST.get("qty") != "":
+    if r.POST.get("id") != "" and r.POST.get("tgl_keluar") != "" and r.POST.get("counter") != "" and r.POST.get("counter") != "" and r.POST.get("barang") != "" and r.POST.get("qty") != "":
         id = r.POST.get("id")
         tgl_keluar = r.POST.get("tgl_keluar")
         barang = r.POST.get("barang")
         counter = r.POST.get("counter")
         person = r.POST.get("person") 
+        status = r.POST.get("status") 
         qty = r.POST.get("qty")
         tp = Temporary_pengeluaran.objects.get(pk=id)
         try:
@@ -784,7 +858,7 @@ def editTPengeluaran(r):
         except:
             return JsonResponse({"message":"Counter sudah tidak aktif!"},status=400,safe=False)
         prs = None
-        stk = Stok_brg.objects.select_for_update().filter(master_barang_id=brg.pk).last()
+        stk = Stok_brg.objects.filter(master_barang_id=brg.pk).last()
         if not stk:
             return JsonResponse({"message":"Stok barang tidak ada!"},status=400,safe=False)
         elif int(stk.stok) == 0:
@@ -796,11 +870,22 @@ def editTPengeluaran(r):
                 prs = Personal.objects.get(pk=person,status="AC")
             except:
                 return JsonResponse({"message":"Person sudah tidak aktif!"},status=400,safe=False)
+            
+        if status == '1':
+            if brg.harga_jual <= 0:
+                return JsonResponse({"message":"Barang ini tidak memiliki harga jual!"},status=400,safe=False)
+
         tp.tgl_keluar = tgl_keluar
         tp.counter_id = ctr
+        tp.divisi = ctr.divisi
         tp.personal_id = prs
         tp.qty = qty
         tp.master_barang_id = brg
+        tp.status = status
+        if status == "0":
+            tp.harga_jual = 0
+        else:
+            tp.harga_jual = brg.harga_jual
         tp.save()
         return JsonResponse({"message":"success edit temporary Pengeluaran"},safe=False,status=200)
 
@@ -875,12 +960,16 @@ def tambahPostPengeluaran(r):
         except:
             msg.append("Counter sudah tidak aktif!")
             continue
+        print(tp.divisi.pk,"sdsdsd")
         p = Pengeluaran(
             tgl_keluar=tp.tgl_keluar,
             qty=tp.qty,
             counter_id=tp.counter_id,
             master_barang_id=brg,
             personal_id=prs,
+            divisi_id=tp.counter_id.divisi.pk,
+            status=tp.status,
+            harga_jual=tp.harga_jual
         ).save()
 
         Stok_brg(
@@ -943,11 +1032,13 @@ def printPengeluaran(r):
         body = json.loads(data)
         template = get_template("formatLaporan/pengeluaranLaporan.html")
         html = template.render({"data":body})
+        print(body)
         config = pdfkit.configuration(wkhtmltopdf=r"/usr/local/bin/wkhtmltopdf")
-        file = pdfkit.from_string(html,r"atkapp/static/pdf/pengeluaran.pdf",configuration=config)
+        print(config)
+        file = pdfkit.from_string(html,r"static/pdf/pengeluaran.pdf",configuration=config)
         return HttpResponse(file)
     else:
-         with open(r"atkapp/static/pdf/pengeluaran.pdf","rb") as fl:
+         with open(r"static/pdf/pengeluaran.pdf","rb") as fl:
             response = HttpResponse(fl.read(),"application/pdf")
             response["Content-Disposition"] = "attachment;filename=pengeluaran"+str(datetime.now())+".pdf"
             return response
@@ -969,12 +1060,12 @@ def printPengeluaranSpg(r):
         template = get_template("formatLaporan/pengeluaranLaporanSpg.html")
         rdr = template.render({"data":body,"total":"{:,}".format(total)})
         config = pdfkit.configuration(wkhtmltopdf=r"/usr/local/bin/wkhtmltopdf")
-        file = pdfkit.from_string(rdr,r"atkapp/static/pdf/pengeluaran.pdf",configuration=config)
+        file = pdfkit.from_string(rdr,r"static/pdf/pengeluaran.pdf",configuration=config)
         return HttpResponse(file)
     else:
-        with open(r"atkapp/static/pdf/pengeluaran.pdf","rb") as fl:
+        with open(r"static/pdf/pengeluaran.pdf","rb") as fl:
             response = HttpResponse(fl.read(),"application/pdf")
-            response['Content-Disposition'] = "attachment;filename=pengeluaran"+str(datetime.now())+".pdf"
+            response['Content-Disposition'] = "filename=pengeluaran"+str(datetime.now())+".pdf"
             return response
 
 def printPembelian(r):
@@ -993,15 +1084,186 @@ def printPembelian(r):
         template = get_template("formatLaporan/pembelianLaporan.html")
         rdr = template.render({"data":newData,"total":"{:,}".format(total)})
         config = pdfkit.configuration(wkhtmltopdf=r"/usr/local/bin/wkhtmltopdf")
-        fl = pdfkit.from_string(rdr,r"atkapp/static/pdf/pembelian.pdf",configuration=config)
+        fl = pdfkit.from_string(rdr,r"static/pdf/pembelian.pdf",configuration=config)
         return HttpResponse(fl)
     else:
-        with open(r"atkapp/static/pdf/pembelian.pdf","rb") as fl:
+        with open(r"static/pdf/pembelian.pdf","rb") as fl:
             response = HttpResponse(fl.read(),"application/pdf")
-            response["Content-Disposition"] = "attachment;filename=pembelian"+str(datetime.now())+".pdf"
+            response["Content-Disposition"] = "filename=pembelian"+str(datetime.now())+".pdf"
             return response
 
+def printLaporanHarian(r):
+    if r.headers["X-Requested-With"] == "XMLHttpRequest":
+        data = r.POST.get("data")
+        data = json.loads(data)
+        for dt in data:
+            obj = dt
+            obj["barang"][""]
 
+def printPdfLaporan(r):
+    if r.method == "POST":
+        bulan = r.POST.get("bulan") 
+        tahun = r.POST.get("tahun")
+        bydivisi = []
+        bydivisiNon = []
+        bycounter = []
+        data = []
+        pembelian = []
+        totalPembelian = 0
+        crs = connection.cursor()
+        crs.execute("WITH p AS(SELECT atkapp_pembelian.subTotal,atkapp_master_barang.kategori_id_id FROM atkapp_pembelian JOIN atkapp_master_barang ON atkapp_master_barang.id = atkapp_pembelian.master_barang_id_id WHERE MONTH(atkapp_pembelian.tgl_beli) = %s AND YEAR(atkapp_pembelian.tgl_beli) = %s ) SELECT SUM(subTotal), kategori_id_id FROM p GROUP BY kategori_id_id",[bulan,tahun])
+        for p in crs.fetchall():
+            kategori = Kategori_brg.objects.filter(pk=p[1])
+            totalPembelian += p[0]
+            obj = {
+                'kategori':kategori[0].kategori,
+                'total':'{:,}'.format(p[0])
+            }
+            pembelian.append(obj)
+        totalDivisi = 0
+        totalDivisiNon = 0
+        totalCounter = 0
+        for d in Divisi.objects.all():
+            bydvs = []
+            bycounter = [] 
+            pengeluaran = Pengeluaran.objects.raw('SELECT * FROM atkapp_pengeluaran WHERE MONTH(tgl_keluar) = %s AND YEAR(tgl_keluar) = %s AND divisi_id=%s',[bulan,tahun,d.pk])
+            byr = 0
+            faktur = 0
+            for p in pengeluaran:
+                if p.status == 1:
+                    byr += p.harga_jual * p.qty
+                elif p.status == 2:
+                    faktur += p.master_barang_id.harga * p.qty
+                else:
+                    continue
+            dvs = {
+                'divisi':d.divisi,
+                "divisi_id":d.pk,
+                'tipe':[]
+            }
+            objbyr = {
+                'tipe_pembayaran':"bayar cash",
+                'total':'{:,}'.format(byr)
+            }
+            totalDivisi += byr
+
+            objfaktur = {
+                'tipe_pembayaran':'potong faktur',
+                'total':'{:,}'.format(faktur)
+            }
+            totalDivisi += faktur
+
+            dvs['tipe'].append(objbyr)
+            dvs['tipe'].append(objfaktur)
+            bydivisi.append(dvs)
+            
+
+            div = {
+                'divisi_id':d.pk,
+                'divisi':d.divisi,
+                "counter":[]
+            }
+            for c in Counter_bagian.objects.filter(divisi_id=d.pk):
+                obj = {
+                    'counter':c.pk,
+                    "counter_bagian":c.counter_bagian,
+                }
+                pengeluaran = Pengeluaran.objects.raw("SELECT master_barang_id_id,id FROM atkapp_pengeluaran WHERE MONTH(tgl_keluar) = %s AND YEAR(tgl_keluar) = %s AND counter_id_id=%s AND status=0",[bulan,tahun,c.pk])
+                brg = {}
+                subTotal = 0
+                for p in pengeluaran:
+                    try:
+                        len(brg[str(p.master_barang_id_id)])
+                        brgObj = {
+                            'id':p.master_barang_id_id,
+                            'barang':p.master_barang_id.barang,
+                            'harga':p.master_barang_id.harga,
+                            'qty':int(p.qty) + int(brg[str(p.master_barang_id_id)]['qty']),
+                            'total':int(p.master_barang_id.harga) * int(p.qty) + int(brg[str(p.master_barang_id_id)]['total'])
+                        }
+                        brg[str(p.master_barang_id_id)] = brgObj
+                    except:
+                        brg[str(p.master_barang_id_id)] = {
+                            'id':p.master_barang_id_id,
+                            'barang':p.master_barang_id.barang,
+                            'harga':p.master_barang_id.harga,
+                            'qty':p.qty,
+                            'total':int(p.master_barang_id.harga) * int(p.qty)
+                        }
+                    subTotal += (int(p.master_barang_id.harga) * int(p.qty))
+                
+                if not brg: continue
+                i = 1
+                brgObject = []
+                for br in brg.keys():
+                    newObj = brg[str(br)]
+                    newObj['total'] = '{:,}'.format(newObj["total"])
+                    newObj['qty'] = '{:,}'.format(newObj["qty"])
+                    brgObject.append(newObj)
+                obj['barang'] = brgObject
+                obj['subTotal'] = '{:,}'.format(subTotal)
+                div["counter"].append(obj)
+            data.append(div)
+        # +++++++++++++++++++++++++++++++++++++++++++ SELECT BERASARKAN STATUS 0 DAN HANYA COUNTER ++++++++++++++++++++++++++++++++++++++++++++++++
+        crs.execute("WITH bayar AS(SELECT atkapp_pengeluaran.id,atkapp_pengeluaran.divisi_id,atkapp_pengeluaran.qty, atkapp_master_barang.harga FROM atkapp_pengeluaran JOIN atkapp_master_barang ON atkapp_pengeluaran.master_barang_id_id=atkapp_master_barang.id WHERE atkapp_pengeluaran.status=0 AND MONTH(atkapp_pengeluaran.tgl_keluar) = %s AND YEAR(atkapp_pengeluaran.tgl_keluar) = %s) SELECT SUM(bayar.harga * bayar.qty),bayar.divisi_id FROM bayar GROUP BY bayar.divisi_id",[bulan,tahun])
+        for bc in crs.fetchall():
+            print('{:,}'.format(bc[0]))
+            try:
+                divisi = Divisi.objects.filter(pk=bc[1])
+                if not divisi.exists():
+                    continue
+                totalDivisiNon += int(bc[0])
+                bydivisiNon.append({'divisi':divisi[0].divisi,'total':'{:,}'.format(bc[0])})
+            except:
+                continue
+        
+        template = get_template('formatLaporan/semuaLaporanCounter.html')
+        print(bydivisi)
+        # options = {
+        #     'page-size': 'Letter',
+        #     'margin-top': '0.75in',
+        #     'margin-right': '0.75in',
+        #     'margin-bottom': '0.75in',
+        #     'margin-left': '0.75in',
+        #     'encoding': "UTF-8",
+        #     "enable-local-file-access": ""
+        # }
+
+        ctx = template.render({"data":data,'bulan':bulanArr[int(bulan) - 1],'tahun':tahun,'bydivisi':bydivisi,'bydivisiNon':bydivisiNon,'totalDivisiNon':'{:,}'.format(totalDivisiNon),'totalCounter':'{:,}'.format(totalCounter),'totalDivisi':'{:,}'.format(totalDivisi),'pembelian':pembelian,'totalPembelian':'{:,}'.format(totalPembelian)})
+        # cfg = pdfkit.configuration(wkhtmltopdf=r'/usr/local/bin/wkhtmltopdf')
+        # file = pdfkit.from_string(ctx,r'static/pdf/semuaPengeluaranCounter.pdf',configuration=cfg,options=options,css=r'static/css/laporan.css')
+        file = weasyprint.HTML(string=ctx)
+        css = weasyprint.CSS(filename='/home/azril/atk-project/atk/simalis-crb/static/bootstrap-5.3.3-dist/css/bootstrap.min.css')
+        file.write_pdf(r'static/pdf/semuaPengeluaranCounter.pdf',stylesheets=[css])
+        return JsonResponse({"data":"success"},status=200,safe=False)
+    else:
+        print("sd")
+        with open(r'static/pdf/semuaPengeluaranCounter.pdf','rb') as f:
+            http = HttpResponse(f.read(),'application/pdf')
+            http["Content-Disposition"] = 'filename=laporanCounter'+str(datetime.now())+'.pdf'
+            return http    
+
+
+    # <script src="{% static "js/jquery-3.7.1.js" %}"></script>
+    # <script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>
+    # <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    # <script>
+    #     $(document).ready(function(e){
+    #         const {jsPDF} = window.jspdf
+    #         var doc = new jsPDF('p','pt','a4');
+
+    #         var pdfjs = document.querySelector('body');
+
+    #         // Convert HTML to PDF in JavaScript
+    #         doc.html(pdfjs, {
+    #             callback: function(doc) {
+    #                 doc.save("hahay.pdf")
+    #             },
+    #             x:10,
+    #             y:10
+    #         });
+    #             })
+    # </script
 def lgtr(r):
     logout(r) 
     return redirect("login")
@@ -1093,7 +1355,7 @@ def getPersonal(r):
 def getPersonalById(r):
     if r.method == "POST":
         id = r.POST.get("id")
-        personal = Personal.objects.get(pk=id)
+        personal = Personal.objects.get(pk=id) 
         personal = serialize("json", [personal])
         personal = json.loads(personal)
         return JsonResponse({"data": personal[0]}, status=200, safe=False)
@@ -1141,13 +1403,22 @@ def editPersonal(r):
 
 @login_required
 def counter(r):
-    return render(r,"counter/counter.html")
+    d = Divisi.objects.filter(status="AC")
+    return render(r,"counter/counter.html",{'divisi':d})
 
 @login_required
 def getCounter(r):
         counter = Counter_bagian.objects.all()
-        counter = serialize("json", counter)
-        return JsonResponse({"data": json.loads(counter)}, status=200, safe=False)
+        data = []
+        for c in counter:
+            obj = {
+                'counter_bagian':c.counter_bagian,
+                'status':c.status,
+                'pk':c.id,
+                'divisi':c.divisi.divisi
+            }
+            data.append(obj)
+        return JsonResponse({"data":data}, status=200, safe=False)
 
 def getCounterById(r):
     if r.method == "POST":
@@ -1162,10 +1433,10 @@ def getCounterById(r):
 def addCounter(r):
     if r.method == "POST":
         counter = r.POST.get("counter")
-        cek = Counter_bagian.objects.filter(counter_bagian=counter)
-        if len(cek) > 0:
+        divisi = r.POST.get("divisi")
+        if Counter_bagian.objects.filter(counter_bagian=counter,divisi_id=int(divisi)).exists():
             return JsonResponse({"message": "counter sudah ada!"}, status=400, safe=False)
-        c = Counter_bagian(counter_bagian=counter)
+        c = Counter_bagian(counter_bagian=counter,divisi_id=int(divisi))
         c.save()
         return JsonResponse({"message": "success create counter"}, status=200, safe=False)
 
@@ -1174,17 +1445,92 @@ def editCounter(r):
     if r.method == "POST":
         id = r.POST.get("id")
         counter = r.POST.get("counter")
+        divisi = r.POST.get("divisi")
         status = r.POST.get("status")
+
+        if status == 'AC':
+            try:
+                d = Divisi.objects.get(pk=int(divisi))
+                if d.status == 'DC':
+                    return JsonResponse({"message": "Divisi sudah tidak aktif lagi"}, status=400, safe=False)
+            except:
+                return JsonResponse({"message": "success edit counter"}, status=400, safe=False)
+
         c = Counter_bagian.objects.get(pk=id)
-        person = Personal.objects.filter(counter_bagian_id=c.pk)
-        print(person)
         # for p in person:
         #     p.status = status
         #     p.save()
         c.counter_bagian = counter
+        c.divisi_id = divisi
         c.status = status
         c.save()
         return JsonResponse({"message": "success edit counter"}, status=200, safe=False)
+
+
+
+
+@login_required
+def divisi(r):
+    d = Divisi.objects.filter(status="AC")
+    return render(r,"divisi/divisi.html",{'divisi':d})
+
+@login_required
+def getDivisi(r):
+        divisi = Divisi.objects.all()
+        data = []
+        for d in divisi:
+            obj = {
+                'divisi':d.divisi,
+                'status':d.status,
+                'pk':d.id,
+            }
+            data.append(obj)
+        return JsonResponse({"data":data}, status=200, safe=False)
+
+def getDivisiById(r):
+    if r.method == "POST":
+        id = r.POST.get("id")
+        divisi = Divisi.objects.get(pk=id)
+        divisi = serialize("json", [divisi])
+        divisi = json.loads(divisi)
+        return JsonResponse({"data": divisi[0]}, status=200, safe=False)
+
+
+@login_required
+def addDivisi(r):
+    if r.method == "POST":
+        divisi = r.POST.get("divisi")
+        print(divisi)
+        if Divisi.objects.filter(divisi=divisi).exists():
+            return JsonResponse({"message": "divisi sudah ada!"}, status=400, safe=False)
+        d = Divisi(divisi=divisi,status="AC")
+        d.save()
+        return JsonResponse({"message": "success create divisi"}, status=200, safe=False)
+
+@login_required
+def editDivisi(r):
+    if r.method == "POST":
+        id = r.POST.get("id")
+        divisi = r.POST.get("divisi")
+        status = r.POST.get("status")
+        if status == 'DC':
+            counter = Counter_bagian.objects.filter(divisi_id=int(id))
+            for c in counter:
+                Personal.objects.filter(counter_bagian_id_id=c.pk).update(status="DC")
+            counter.update(status="DC")
+        elif status == "AC":
+            counter = Counter_bagian.objects.filter(divisi_id=int(id))
+            for c in counter:
+                Personal.objects.filter(counter_bagian_id_id=c.pk).update(status="AC")
+            counter.update(status="AC")
+        d = Divisi.objects.get(pk=id)
+        # for p in person:
+        #     p.status = status
+        #     p.save()
+        d.divisi = divisi
+        d.status = status
+        d.save()
+        return JsonResponse({"message": "success edit divisi"}, status=200, safe=False)
 
 #     template = get_template("pembelianLaporan.html")
 #     output = template.render() 

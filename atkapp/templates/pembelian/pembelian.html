@@ -49,13 +49,14 @@
   </div>
 </div>
 <div class="w-full overflow-x-auto">
-  <table class="tablePembelian cell-border">
+  <table class="tablePembelian cell-border" style="width: 100%;">
    {% csrf_token %}
    <thead>
        <tr>
            <th>Tanggal Pembelian</th>
            <th>Nama Barang</th>
-           <th>Harga</th> 
+           <th>Harga Beli</th> 
+           <th>Harga Jual</th> 
            <th>Qty</th>
            <th>Sub Total</th>
            <th>Aksi</th>
@@ -72,7 +73,7 @@
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+          <h1 class="modal-title fs-5" id="exampleModalLabel">Edit Pembelian</h1>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
@@ -135,13 +136,13 @@
           </div>
           <div class="mb-3">
             <label for="harga" class="form-label" class="capitalize">harga</label>
-            <input type="text" required class="form-control" id="hargaAdd">
+            <input type="text" required class="form-control" id="hargaAdd" value="0">
             <span class="text-xs text-gray-700 font-light">Harga Sebelumnya <span class="hargaSeb font-bold">Rp 0</span>
             </span>
           </div>
           <div class="mb-3">
             <label for="qty" class="form-label" class="capitalize">qty</label>
-            <input type="text" required class="form-control" id="qtyAdd">
+            <input type="text" required class="form-control" id="qtyAdd" value="0">
           </div>
         </div>
         <div class="modal-footer">
@@ -204,14 +205,15 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <table class="tableTPembelian cell-border w-full ">
+          <table class="tableTPembelian cell-border w-full" style="width: 100%;">
             {% csrf_token %}
             <thead class="w-full">
                 <tr>
                     <th>Select</th>
                     <th>Tanggal Pembelian</th>
                     <th>Nama Barang</th>
-                    <th>Harga</th> 
+                    <th>Harga Beli</th> 
+                    <th>Harga Jual</th> 
                     <th>Qty</th>
                     <th>Sub Total</th>
                     <th>Aksi</th>
@@ -233,5 +235,5 @@
   
    {% endblock isi %}
    {% block js %}
-    <script src="{% static "js/tablepembelian.js" %}?45454"></script>
+    <script src="{% static "js/tablepembelian.js" %}?378747"></script>
   {% endblock js %}

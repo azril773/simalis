@@ -1,43 +1,23 @@
-const ip = "http://15.63.254.153:5454";
+const ip = "http://15.63.254.114:8000";
 // "http://15.63.254.153:5454";
 let hargas = "";
-function formatInput(e, hrg = "") {
-  if (/[a-z]/gi.test(e.key)) {
-    hargas = hargas
-    hrg = hargas
-  } else if ((hrg !== "" || hrg !== "0") && !/[a-z]/gi.test(hrg)) {
-    console.log("ok")
-    hargas = hrg
-  } else if (/\d/gi.test(e.key)) {
-    hargas += e.key
-  } else if (hargas) {
-    hargas = hrg.split(".").join("");
-  } else {
-    hargas = "";
-  }
-  if (e.key == "Backspace") {
-    if ($(e.target).val() == "") {
-      hargas = ""
-      return
-    };
-    hargas = $(e.target).val().split(".").join("");
-    format(hargas, e);
-    return;
-  } else if (
-    e.key == "Shift" ||
-    e.key == "Enter" ||
-    e.key == "Control" ||
-    /[a-zA-Z]+/gi.test(e.key)
-  ) {
-    if ($(e.target).val() == "") {
-      hargas = "";
-      return;
-    }
-    hargas = "";
-    // format(hargas, e);
-    return;
-  }
-  format(hargas, e);
+function formatInput(e, hrg) {
+  const num = $(e.target).val(hrg.replace(/[^,\d]/g,''))
+  const sisa = $(num).val().length % 3
+  const awal = $(num).val().substr(0,sisa)
+  const ribuan = $(num).val().substr(sisa).match(/\d{3}/g)
+  let data
+  const join = ribuan == undefined ? awal : (awal ? awal +'.'+ribuan.join(".") : ribuan.join("."))
+  $(e.target).val(join)
+}
+function formatHrg(hrg) {
+  const num = `${hrg}`.replace(/[^,\d]/g,'')
+  const sisa = num.length % 3
+  const awal = num.substr(0,sisa)
+  const ribuan = num.substr(sisa).match(/\d{3}/g)
+  let data
+  const join = ribuan == undefined ? awal : (awal ? awal +'.'+ribuan.join(".") : ribuan.join("."))
+  return join
 }
 
 function format(harga, e) {

@@ -4,7 +4,10 @@ const modalTEdit = new bootstrap.Modal("#modalEditTPengeluaran");
 const modalAdd = new bootstrap.Modal("#modalAddTPengeluaran");
 const posting = new bootstrap.Modal("#posting");
 const token = document.querySelector("[name=csrfmiddlewaretoken]").value;
-
+let selectPerson = false
+let selectPersonEdit = false
+let selectPersonTEdit = false
+let harga_jual = 0
 $(window).on("keydown", function (e) {
   // if click alt+a modal add show up
   if (e.altKey && e.key == "a") {
@@ -49,7 +52,6 @@ const table = new DataTable(".tablePengeluaran", {
     {
       data: "tgl_pengeluaran",
       render: function (data, type, row, meta) {
-        console.log(data);
         const date = new Date(data).toLocaleDateString("id-ID", {
           weekday: "long",
           day: "2-digit",
@@ -73,17 +75,29 @@ const table = new DataTable(".tablePengeluaran", {
     {
       data: "barang.harga",
       render: function (data, type, row, meta) {
-        console.log(data);
         const numberFormat = parseInt(data).toLocaleString("id-ID", {
           currency: "IDR",
           style: "currency",
         });
-        return `<span>${numberFormat}</span>`;
+        return `<span class="w-full"><p class="text-end">${numberFormat}</p></span>`;
+      },
+    },
+    {
+      data: "harga_jual",
+      render: function (data, type, row, meta) {
+        const numberFormat = parseInt(data).toLocaleString("id-ID", {
+          currency: "IDR",
+          style: "currency",
+        });
+        return `<span class="w-full"><p class="text-end">${numberFormat}</p></span>`;
       },
     },
     { data: "kategori" },
     {
       data: "counter",
+    },
+    {
+      data: "divisi",
     },
     {
       data: "person",
@@ -95,7 +109,24 @@ const table = new DataTable(".tablePengeluaran", {
         }
       },
     },
-    { data: "qty" },
+    {data:"qty",
+      render:(d,t,r,m) => {
+        return formatHrg(d)
+      }
+    },
+    {data:'status',
+      render:(data,type,row,meta) => {
+        let render = ''
+        if(data == 0){
+          render = `<span>Non Bayar</span>`
+        }else if(data ==1){
+          render = `<span>Bayar Cash</span>`
+        }else{
+          render = `<span>Potong Faktur</span>`
+        }
+        return render
+      }
+    },
     {
       data: "aksi",
       render: function (data, type, row, meta) {
@@ -103,6 +134,7 @@ const table = new DataTable(".tablePengeluaran", {
       },
     },
   ],
+  scrollX:true
 });
 
 const tableT = new DataTable(".tableTPengeluaran", {
@@ -156,12 +188,24 @@ const tableT = new DataTable(".tableTPengeluaran", {
       },
     },
     {
+      data: "barang.fields.harga_jual",
+      render: function (data, type, row, meta) {
+        const numberFormat = parseInt(data).toLocaleString("id-ID", {
+          currency: "IDR",
+          style: "currency",
+        });
+        return `<span>${numberFormat}</span>`;
+      },
+    },
+    {
       data: "counter.fields.counter_bagian",
+    },
+    {
+      data: "divisi.fields.divisi",
     },
     {
       data: "person.fields.nama",
       render: (data, type, row, meta) => {
-        console.log(data);
         if (data) {
           return `<span>${data}</span>`;
         } else {
@@ -171,6 +215,23 @@ const tableT = new DataTable(".tableTPengeluaran", {
     },
     {
       data: "tPengeluaran.fields.qty",
+      render:(d,t,r,m) => {
+        return formatHrg(d)
+      }
+    },
+    {data:'tPengeluaran.fields.status',
+      render:(data,type,row,meta) => {
+        let render = ''
+        if(data == 0){
+          render = `<span>Non Bayar</span>`
+        }else if(data == 1){
+          render = `<span>Bayar</span>`
+        }else{
+          render = `<span>Potong Faktur</span>`
+          
+        }
+        return render
+      }
     },
     {
       data: "aksi",
@@ -182,61 +243,127 @@ const tableT = new DataTable(".tableTPengeluaran", {
       },
     },
   ],
+  scrollX:true
+});
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+const statusAddSelectize = $("#statusAdd").selectize({
+  onChange: function(e){
+    if(harga_jual > 0){
+      $("#qtyAdd").focus();
+      $("#qtyAdd").select();
+    }
+  },
 });
 
 const barangAddSelectize = $("#barangAdd").selectize({
-  maxOptions: 5,
   onChange: function (e) {
+    $.ajax({
+      url:`${ip}/atk/getBarangById/`,
+      method:"post",
+      data:{id:e},
+      headers:{"X-CSRFToken":token},
+      success(e){
+        if(e.data.fields.harga_jual <= 0){
+          statusAddSelectize[0].selectize.setValue("0")
+          statusAddSelectize[0].selectize.disable()
+        }else{
+          statusAddSelectize[0].selectize.enable()
+          statusAddSelectize[0].selectize.clear()
+          harga_jual = e.data.fields.harga_jual
+        }
+      }
+    })
     counterAddSelectize[0].selectize.focus();
   },
 });
 
+const divisiAddSelectize = $("#divisiAdd").selectize({
+  disabledField:'disabled'
+})
+divisiAddSelectize[0].selectize.disable()
+
 const counterAddSelectize = $("#counterAdd").selectize({
-  maxOptions: 5,
-  onChange: function (e) {
-    personAddSelectize[0].selectize.focus();
-  },
+  onChange: counterChangeAdd
 });
 
 const personAddSelectize = $("#personAdd").selectize({
-  maxOptions: 5,
   onChange: personChangeAdd,
 });
 
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 const barangTEditSelectize = $("#barangTEdit").selectize({
-  maxOptions: 5,
+  onChange:function(e){
+    counterTEditSelectize[0].selectize.focus()
+  }
 });
 
 const counterTEditSelectize = $("#counterTEdit").selectize({
-  maxOptions: 5,
+  onChange:counterChangeTEdit
 });
 
+const divisiTEditSelectize = $("#divisiTEdit").selectize({
+});
+
+divisiTEditSelectize[0].selectize.disable()
+
 const personTEditSelectize = $("#personTEdit").selectize({
-  maxOptions: 5,
   onChange: personChangeTEdit,
 });
 
+const statusTEditSelectize = $("#statusTEdit").selectize({
+  onChange: function(e){
+    $("#qtyTEdit").focus();
+    $("#qtyTEdit").select();
+  },
+});
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 const barangEditSelectize = $("#barangEdit").selectize({
-  maxOptions: 5,
+  onChange:function(e){
+    counterEditSelectize[0].selectize.focus()
+  }
 });
 
 const counterEditSelectize = $("#counterEdit").selectize({
-  maxOptions: 5,
+  onChange:counterChangeEdit
 });
 
+const divisiEditSelectize = $("#divisiEdit").selectize({
+});
+
+divisiEditSelectize[0].selectize.disable()
+
 const personEditSelectize = $("#personEdit").selectize({
-  maxOptions: 5,
   onChange: personChangeEdit,
 });
+
+const statusEditSelectize = $("#statusEdit").selectize({
+  onChange: function(e){
+    $("#qtyEdit").focus();
+    $("#qtyEdit").select();
+  },
+});
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+
 
 function personChangeEdit(id) {
   const person = personEditSelectize[0].selectize;
   const counter = counterEditSelectize[0].selectize;
+  const divisi = divisiEditSelectize[0].selectize;
   let option;
   counter.disable();
   if (id == "") {
+    selectPersonEdit = false
     counter.enable();
     counter.clear();
+    divisi.clear();
     return;
   }
   $.ajax({
@@ -245,10 +372,83 @@ function personChangeEdit(id) {
     data: { id },
     headers: { "X-CSRFToken": token },
     success: (e) => {
-      counter.setValue(e.data.fields.counter_bagian_id);
+      selectPersonEdit = true
+      counter.setValue(e.data[0].fields.counter_bagian_id);
+      divisi.setValue(e.data[1].fields.divisi);
+      statusEditSelectize[0].selectize.focus()
     },
   });
 }
+function counterChangeAdd(id) {
+  if(!selectPerson){
+    const counter = counterAddSelectize[0].selectize;
+    const divisi = divisiAddSelectize[0].selectize;
+    let option;
+    if (id == "") {
+      divisi.clear();
+      return;
+    }
+    $.ajax({
+      url: `${ip}/atk/getCounterById/`,
+      method: "post",
+      data: { id },
+      headers: { "X-CSRFToken": token },
+      success: (e) => {
+        divisi.setValue(e.data.fields.divisi);
+        personAddSelectize[0].selectize.focus()
+      },
+    });
+  }
+}
+function counterChangeEdit(id) {
+  if(!selectPersonEdit){
+    const counter = counterEditSelectize[0].selectize;
+    const divisi = divisiEditSelectize[0].selectize;
+    let option;
+    if (id == "") {
+      divisi.clear();
+      return;
+    }
+    $.ajax({
+      url: `${ip}/atk/getCounterById/`,
+      method: "post",
+      data: { id },
+      headers: { "X-CSRFToken": token },
+      success: (e) => {
+        divisi.setValue(e.data.fields.divisi);
+        personEditSelectize[0].selectize.focus()
+      },
+    });
+  }
+}
+function counterChangeTEdit(id) {
+  if(!selectPersonTEdit){
+    const counter = counterTEditSelectize[0].selectize;
+    const divisi = divisiTEditSelectize[0].selectize;
+    let option;
+    if (id == "") {
+      divisi.clear();
+      return;
+    }
+    $.ajax({
+      url: `${ip}/atk/getCounterById/`,
+      method: "post",
+      data: { id },
+      headers: { "X-CSRFToken": token },
+      success: (e) => {
+        divisi.setValue(e.data.fields.divisi);
+        personTEditSelectize[0].selectize.focus()
+      },
+    });
+  }
+}
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 $("table").click(function (e) {
   if (e.target.classList.contains("editModalButton")) {
@@ -258,6 +458,8 @@ $("table").click(function (e) {
     const barang = barangEditSelectize[0].selectize;
     const counter = counterEditSelectize[0].selectize;
     const person = personEditSelectize[0].selectize;
+    const divisi = divisiEditSelectize[0].selectize;
+    const status = statusEditSelectize[0].selectize;
     const qty = $("#qtyEdit").val("");
     $("#tgl_keluarEdit").val("");
     const id = e.target.getAttribute("data-id");
@@ -267,101 +469,29 @@ $("table").click(function (e) {
       data: { id },
       headers: { "X-CSRFToken": token },
       success: (e) => {
-        console.log(e);
         const date = moment(e.data.fields.tgl_keluar).format(
           "YYYY-MM-DDThh:mm"
         );
         person.setValue(e.data.fields.personal_id);
         counter.setValue(e.data.fields.counter_id);
         barang.setValue(e.data.fields.master_barang_id);
+        divisi.setValue(e.data.fields.divisi);
+        status.setValue(e.data.fields.status)
         $("#tgl_keluarEdit").val(date);
         $("#qtyEdit").val(e.data.fields.qty);
         $("#idEdit").val(e.data.pk);
         setTimeout(() => {
           $("#qtyEdit").focus();
+          $("#qtyEdit").select();
         }, 500);
       },
       error: (err) => {
-        console.log(err.message);
       },
     });
   }
 });
 
-$("#editPengeluaran").click(function (e) {
-  const id = $("#idEdit").val();
-  const tgl_keluar = $("#tgl_keluarEdit").val();
-  const barang = $("#barangEdit").val();
-  const counter = $("#counterEdit").val();
-  const person = $("#personEdit").val();
-  const qty = $("#qtyEdit").val();
-  $.ajax({
-    url: `${ip}/atk/editPengeluaran/`,
-    method: "post",
-    data: { id, tgl_keluar, barang, counter, person, qty },
-    headers: { "X-CSRFToken": token },
-    success: (e) => {
-      editModalIn.hide();
-      table.ajax.reload();
-    },
-    error: (err) => {
-      $(".msg").append(`
-          <span class="alert alert-danger">${err.responseJSON.message}!</span>
-        `);
-      editModalIn.hide();
-    },
-  });
-});
-// pertama
-$("#modalAddTPengeluaran").on("show.bs.modal",function (e) {
-  const date = moment().format("YYYY-MM-DD HH:mm");
-  console.log(date);
-  $("#tgl_keluarAdd").val(date);
-  barangAddSelectize[0].selectize.clear();
-  setTimeout(() => {
-    barangAddSelectize[0].selectize.focus();
-  }, 500);
-  personAddSelectize[0].selectize.clear();
-  counterAddSelectize[0].selectize.clear();
-  $("#qtyAdd").val("");
-});
-
-$("#addPengeluaran").click(function (e) {
-  const tgl_keluar = $("#tgl_keluarAdd").val();
-  const barang = $("#barangAdd").val();
-  const counter = $("#counterAdd").val();
-  const person = $("#personAdd").val();
-  const qty = $("#qtyAdd").val();
-
-  $.ajax({
-    url: `${ip}/atk/tambahTPengeluaran/`,
-    method: "post",
-    data: { tgl_keluar, counter, barang, qty, person },
-    headers: { "X-CSRFToken": token },
-    success: (e) => {
-      modalAdd.hide();
-      tableT.ajax.reload();
-      const tgl_beli = $("#tgl_beliAdd").val("");
-      const harga = $("#hargaAdd").val("");
-      barangAddSelectize[0].selectize.clear();
-      counterAddSelectize[0].selectize.clear();
-      personAddSelectize[0].selectize.clear();
-      const qty = $("#qtyAdd").val("");
-      getTPengeluaran();
-    },
-    error:(err) => {
-      if(err.responseJSON){
-        $(".msg").append(`
-          <span class="alert alert-danger">${err.responseJSON?.message}!</span>
-        `);
-      modalAdd.hide();
-      }
-    }
-  });
-});
-
 tableT.on("click", "tbody tr", (e) => {
-  console.log($(e.target).is("td>a"));
   if (!$(e.target).is("input") && !$(e.target).is("td>span>a.editTModalButton") && !$(e.target).is("td>span>a.deleteTButton")) {
     if ($(e.currentTarget).find("td:first").find("input").prop("checked")) {
       $(e.currentTarget).find("td:first").find("input").prop("checked", false);
@@ -376,12 +506,26 @@ tableT.on("click", "tbody tr", (e) => {
   });
 });
 
+$("#modalAddTPengeluaran").on("show.bs.modal",function (e) {
+  const date = moment().format("YYYY-MM-DD HH:mm");
+  $("#tgl_keluarAdd").val(date);
+  barangAddSelectize[0].selectize.clear();
+  setTimeout(() => {
+    barangAddSelectize[0].selectize.focus();
+  }, 500);
+  personAddSelectize[0].selectize.clear();
+  counterAddSelectize[0].selectize.clear();
+  statusAddSelectize[0].selectize.clear();
+  
+  $("#divisiAdd").val("");
+});
+
 $(".tableTPengeluaran").on("click", "tbody tr", function (e) {
   e.preventDefault()
   const id = $(e.target).attr("data-id");
-  console.log(id);
   const counter = counterTEditSelectize[0].selectize;
   const person = personTEditSelectize[0].selectize;
+  const divisi = divisiTEditSelectize[0].selectize;
   const barang = barangTEditSelectize[0].selectize;
   if ($(e.target).is("span>a.editTModalButton")) {
     $.ajax({
@@ -393,23 +537,22 @@ $(".tableTPengeluaran").on("click", "tbody tr", function (e) {
         const date = moment(e.data.fields.tgl_keluar).format(
           "YYYY-MM-DDThh:mm"
         );
-        if (e.data.fields.personal_id != "") {
-          counter.setValue(e.data.fields.counter_id);
-          counter.disable();
-        } else {
-          counter.setValue(e.data.fields.counter_id);
-        }
+        counter.setValue(e.data.fields.counter_id);
         person.setValue(e.data.fields.personal_id);
+        divisi.setValue(e.data.fields.divisi);
         barang.setValue(e.data.fields.master_barang_id);
         $("#tgl_keluarTEdit").val(date);
         $("#qtyTEdit").val(e.data.fields.qty);
         $("#idTEdit").val(e.data.pk);
+        console.log(e.data)
+        statusTEditSelectize[0].selectize.setValue(e.data.fields.status);
         setTimeout(() => {
           $("#qtyTEdit").focus();
+          $("#qtyTEdit").select();
         }, 500);
       },
     });
-  }else{
+  }else if($(e.target).is("span>a.deleteTButton")){
     $.ajax({
       url: `${ip}/atk/deleteTPengeluaran/`,
       method: "post",
@@ -423,19 +566,92 @@ $(".tableTPengeluaran").on("click", "tbody tr", function (e) {
   }
 });
 
+
+
+
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+$("#editPengeluaran").click(function (e) {
+  const id = $("#idEdit").val();
+  const tgl_keluar = $("#tgl_keluarEdit").val();
+  const barang = $("#barangEdit").val();
+  const counter = $("#counterEdit").val();
+  const divisi = $("#divisiEdit").val();
+  const person = $("#personEdit").val();
+  const qty = $("#qtyEdit").val().split(".").join("");
+  const status = $("#statusEdit").val();
+  $.ajax({
+    url: `${ip}/atk/editPengeluaran/`,
+    method: "post",
+    data: { id, tgl_keluar, barang, counter,divisi, person, qty,status },
+    headers: { "X-CSRFToken": token },
+    success: (e) => {
+      selectPersonEdit = false
+      editModalIn.hide();
+      table.ajax.reload();
+    },
+    error: (err) => {
+      $(".msg").append(`
+          <span class="alert alert-danger">${err.responseJSON.message}!</span>
+        `);
+      editModalIn.hide();
+    },
+  });
+});
+
+
+$("#addPengeluaran").click(function (e) {
+  const tgl_keluar = $("#tgl_keluarAdd").val();
+  const barang = $("#barangAdd").val();
+  const counter = $("#counterAdd").val();
+  const person = $("#personAdd").val();
+  const qty = $("#qtyAdd").val().split(".").join("")
+  const status = $("#statusAdd").val();
+
+  $.ajax({
+    url: `${ip}/atk/tambahTPengeluaran/`,
+    method: "post",
+    data: { tgl_keluar, counter, barang, qty, person,status },
+    headers: { "X-CSRFToken": token },
+    success: (e) => {
+      modalAdd.hide();
+      tableT.ajax.reload();
+      const tgl_beli = $("#tgl_beliAdd").val("");
+      const harga = $("#hargaAdd").val("");
+      barangAddSelectize[0].selectize.clear();
+      counterAddSelectize[0].selectize.clear();
+      personAddSelectize[0].selectize.clear();
+      const qty = $("#qtyAdd").val("0");
+      selectPerson = false
+      getTPengeluaran();
+    },
+    error:(err) => {
+      if(err.responseJSON){
+        $(".msg").append(`
+          <span class="alert alert-danger">${err.responseJSON?.message}!</span>
+        `);
+      modalAdd.hide();
+      }
+    }
+  });
+});
+
 $("#editTPengeluaran").click(function (e) {
   const id = $("#idTEdit").val();
   const tgl_keluar = $("#tgl_keluarTEdit").val();
   const barang = $("#barangTEdit").val();
   const counter = $("#counterTEdit").val();
+  const divisi = $("#divisiTEdit").val();
   const person = $("#personTEdit").val();
-  const qty = $("#qtyTEdit").val();
+  const status = $("#statusTEdit").val();
+  const qty = $("#qtyTEdit").val().split(".").join("")
   $.ajax({
     url: `${ip}/atk/editTPengeluaran/`,
     method: "post",
-    data: { id, qty, tgl_keluar, barang, counter, person },
+    data: { id, qty, tgl_keluar, barang, counter,divisi, person,status },
     headers: { "X-CSRFToken": token },
     success: (e) => {
+      selectPersonTEdit = false
       modalTEdit.hide();
       tableT.ajax.reload();
     },
@@ -445,11 +661,17 @@ $("#editTPengeluaran").click(function (e) {
           <span class="alert alert-danger">${err.responseJSON?.message}!</span>
         `);
       modalTEdit.hide();
-      posting.hide()
+      setTimeout(() => {
+        posting.hide()
+      }, 500);
       }
     }
   });
 });
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// pertama
+
+
 
 $("#modalEditTPengeluaran").on("hide.bs.modal", function (e) {
   posting.show();
@@ -491,14 +713,16 @@ $("#buttonPostAll").click(function (e) {
 });
 
 function personChangeAdd(id) {
-  console.log(id);
   const counter = counterAddSelectize[0].selectize;
   const person = personAddSelectize[0].selectize;
+  const divisi = divisiAddSelectize[0].selectize;
   let option;
   counter.clear();
   if (id == "") {
+      selectPerson = false
     counter.clear();
     counter.enable();
+    divisi.clear();
     return;
   }
   $.ajax({
@@ -507,10 +731,21 @@ function personChangeAdd(id) {
     data: { id },
     headers: { "X-CSRFToken": token },
     success: (e) => {
-      counter.setValue(e.data.fields.counter_bagian_id);
+      selectPerson = true
+      counter.setValue(e.data[0].fields.counter_bagian_id);
+      divisi.setValue(e.data[1].fields.divisi)
       counter.disable();
-      person.enable();
-      $("#qtyAdd").focus();
+      divisi.disable();
+      setTimeout(() => {
+        person.disable()
+        person.enable();
+        if(harga_jual <= 0){
+          $("#qtyAdd").focus()
+          $("#qtyAdd").select()
+        }else{
+          statusAddSelectize[0].selectize.focus()
+        }
+      }, 20);
     },
   });
 }
@@ -538,15 +773,21 @@ $("#qtyEdit")
       $("#editPengeluaran").click();
     }
   });
+$("#qtyEdit")
+  .on("focus",function(e){
+    $("#qtyEdit").select()
+  })
 
 function personChangeTEdit(id) {
-  console.log(id);
   const counter = counterTEditSelectize[0].selectize;
   const person = personTEditSelectize[0].selectize;
+  const divisi = divisiTEditSelectize[0].selectize;
   let option;
   counter.clear();
   if (id == "") {
+      selectPersonTEdit = false
     counter.clear();
+    divisi.clear();
     counter.enable();
     return;
   }
@@ -556,8 +797,11 @@ function personChangeTEdit(id) {
     data: { id },
     headers: { "X-CSRFToken": token },
     success: (e) => {
-      counter.setValue(e.data.fields.counter_bagian_id);
+      selectPersonTEdit = true
+      counter.setValue(e.data[0].fields.counter_bagian_id);
+      divisi.setValue(e.data[1].fields.divisi);
       counter.disable();
+      statusTEditSelectize[0].selectize.focus()
     },
   });
 }
@@ -570,4 +814,14 @@ function personChangeTEdit(id) {
 //         `);
 //   return false;
 // }
+
+$("#qtyEdit").on("keyup",function(e){
+  formatInput(e,$(e.target).val())
+})
+$("#qtyTEdit").on("keyup",function(e){
+  formatInput(e,$(e.target).val())
+})
+$("#qtyAdd").on("keyup",function(e){
+  formatInput(e,$(e.target).val())
+})
 getTPengeluaran();

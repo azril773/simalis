@@ -38,17 +38,20 @@
   </div>
 </div>
 <div class="w-full overflow-x-auto">
-  <table class="tablePengeluaran cell-border">
+  <table class="tablePengeluaran cell-border" style="width: 100%;">
    {% csrf_token %}
    <thead>
        <tr>
            <th>Tanggal Pengeluaran</th>
            <th>Nama Barang</th>
-           <th>Harga Barang</th>
+           <th align="right">Harga Beli</th>
+           <th align="right">Harga Jual</th>
            <th>Katgori</th> 
            <th>Counter</th>
+           <th>Divisi</th>
            <th>Person</th>
            <th>Qty</th> 
+           <th>Tipe Bayar</th> 
            <th>Aksi</th>
        </tr> 
    </thead>
@@ -58,12 +61,12 @@
   </table>
 </div>
 
-
+<!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ EditPengeluaran -->
    <div class="modal fade" id="modalEditPengeluaran" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+          <h1 class="modal-title fs-5" id="exampleModalLabel">Edit Pengeluaran</h1>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
@@ -80,6 +83,16 @@
                <option value="{{b.pk}}">{{b.barang}}</option>
               {% endfor %}
             </select>
+          </div>
+          <div class="mb-3">
+            <label for="divisi" class="capitalize mb-[8px]">divisi</label>
+            <select class="normalize editSelect" required id="divisiEdit" name="divisi" aria-label="Default select example">
+              <option selected value="">Open this select menu</option>
+              {% for d in divisi %}
+               <option value="{{d.pk}}">{{d.divisi}}</option>
+              {% endfor %}
+            </select>
+            </span>
           </div>
           <div class="mb-3">
             <label for="counter" class="capitalize mb-[8px]">counter</label>
@@ -102,8 +115,18 @@
             </span>
           </div>
           <div class="mb-3">
+            <label for="status" class="capitalize mb-[8px]">status</label>
+            <select class="normalize editSelect" required id="statusEdit" name="status" aria-label="Default select example">
+              <option value="" selected>Pilih Status</option>
+              <option value="0">Non Bayar</option>
+              <option value="1">Bayar Cash</option>
+              <option value="2">Potong Faktur</option>
+            </select>
+            </span>
+          </div>
+          <div class="mb-3">
             <label for="qty" class="form-label" class="capitalize">qty</label>
-            <input type="number" required class="form-control" id="qtyEdit">
+            <input type="text" required class="form-control" id="qtyEdit">
             <input type="hidden" name="id" id="idEdit">
           </div>
         </div>
@@ -114,12 +137,18 @@
       </div>
     </div>
   </div>
+<!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ EditPengeluaran -->
+
+
+
+
+<!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ EditPengeluaranTemporary -->
 
   <div class="modal fade" id="modalEditTPengeluaran" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+          <h1 class="modal-title fs-5" id="exampleModalLabel">Edit Pengeluaran</h1>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
@@ -134,6 +163,15 @@
               <option selected  value="">Open this select menu</option>
               {% for b in barang %}
                <option value="{{b.pk}}">{{b.barang}}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="divisi" class="capitalize mb-[8px]">divisi</label>
+            <select class="normalize" required id="divisiTEdit" name="divisi" aria-label="Default select example">
+              <option selected value="">Open this select menu</option>
+              {% for d in divisi %}
+               <option value="{{d.pk}}">{{d.divisi}}</option>
               {% endfor %}
             </select>
           </div>
@@ -156,8 +194,18 @@
             </select>
           </div>
           <div class="mb-3">
+            <label for="status" class="capitalize mb-[8px]">status</label>
+            <select class="normalize editSelect" required id="statusTEdit" name="status" aria-label="Default select example">
+              <option value="" selected>Pilih Status</option>
+              <option value="0">Non Bayar</option>
+              <option value="1">Bayar Cash</option>
+              <option value="2">Potong Faktur</option>
+            </select>
+            </span>
+          </div>
+          <div class="mb-3">
             <label for="qty" class="form-label" class="capitalize">qty</label>
-            <input type="number" required class="form-control" id="qtyTEdit">
+            <input type="text" required class="form-control" id="qtyTEdit">
             <input type="hidden" required class="form-control" id="idTEdit">
           </div>
         </div>
@@ -191,6 +239,15 @@
             </select>
           </div>
           <div class="mb-3">
+            <label for="divisi" class="capitalize mb-[8px]">divisi</label>
+            <select class="normalize AddSelect" required id="divisiAdd" name="divisi" aria-label="Default select example">
+              <option selected value="">Open this select menu</option>
+              {% for d in divisi %}
+               <option value="{{d.pk}}">{{d.divisi}}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
             <label for="counter" class="capitalize mb-[8px]">counter</label>
             <select class="normalize AddSelect" required id="counterAdd" name="counter" aria-label="Default select example">
               <option selected value="">Open this select menu</option>
@@ -209,8 +266,18 @@
             </select>
           </div>
           <div class="mb-3">
+            <label for="status" class="capitalize mb-[8px]">status</label>
+            <select class="normalize addSelect" required id="statusAdd" name="status" aria-label="Default select example">
+              <option value="" selected>Pilih Status</option>
+              <option value="0">Non Bayar</option>
+              <option value="1">Bayar Cash</option>
+              <option value="2">Potong Faktur</option>
+            </select>
+            </span>
+          </div>
+          <div class="mb-3">
             <label for="qty" class="form-label" class="capitalize">qty</label>
-            <input type="number" required class="form-control" id="qtyAdd">
+            <input type="text" required class="form-control" id="qtyAdd" value="0">
           </div>
         </div>
         <div class="modal-footer">
@@ -220,6 +287,12 @@
       </div>
     </div>
   </div>
+  <!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ EditPengeluaranTemporary -->
+
+
+
+  <!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ Posting -->
+
 
   <div class="modal modal-lg fade" id="posting" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-scrollable">
@@ -229,16 +302,19 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <table class="tableTPengeluaran cell-border" id="tableTPengeluaran">
+          <table class="tableTPengeluaran cell-border" id="tableTPengeluaran" style="width: 100%;">
             <thead>
                 <tr>
                     <th>Select</th>
                     <th>Tanggal Pengeluaran</th>
                     <th>Nama Barang</th>
-                    <th>Harga Barang</th>
+                    <th>Harga Beli</th>
+                    <th>Harga Jual</th>
                     <th>Counter</th>
+                    <th>Divisi</th>
                     <th>Person</th>
                     <th>Qty</th> 
+                    <th>Tipe Bayar</th> 
                     <th>Aksi</th>
                 </tr> 
             </thead>
@@ -254,8 +330,9 @@
       </div>
     </div>
   </div>
+<!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ Posting -->
 
    {% endblock isi %}
    {% block js %}
-        <script src="{% static "js/tablepengeluaran.js" %}?878374"></script>
+        <script src="{% static "js/tablepengeluaran.js" %}?354"></script>
     {% endblock js %}

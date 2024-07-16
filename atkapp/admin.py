@@ -82,6 +82,9 @@ class stok_brg(ImportExportModelAdmin):
     list_display = ('qty_terima',"qty_keluar","stok","kode","person","master_barang_id")
     list_per_page = 30
 
+@admin.register(Divisi)
+class divisi(ImportExportModelAdmin):
+    list_display = ("divisi",)
 
 
 

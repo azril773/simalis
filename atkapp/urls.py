@@ -68,6 +68,7 @@ urlpatterns = [
 
     # LAPORAN
     path("laporan/",views.laporan,name="laporan"),
+    path("rangeHarian/",views.rangeHarian,name="rangeHarian"),
     path("getLaporan/",views.getLaporan,name="getLaporan"),
 
 
@@ -77,6 +78,8 @@ urlpatterns = [
     path("printPengeluaran/",views.printPengeluaran,name="printPengeluaran"),
     path("printPengeluaranSpg/",views.printPengeluaranSpg,name="printPengeluaranSpg"),
     path("printPembelian/",views.printPembelian,name="printPembelian"),
+    path("printLaporanHarian/",views.printLaporanHarian,name="printLaporanHarian"),
+    path("printPdfLaporan/",views.printPdfLaporan,name="printPdfLaporan"),
 
     path("kategori/",views.kategori,name="kategori"),
     path("getKategori/",views.getKategori,name="getKategori"),
@@ -90,6 +93,13 @@ urlpatterns = [
     path("getCounterById/",views.getCounterById,name="getCounterById"),
     path("addCounter/",views.addCounter,name="addCounter"),
     path("editCounter/",views.editCounter,name="editCounter"),
+
+
+    path("divisi/",views.divisi,name="divisi"),
+    path("getDivisi/",views.getDivisi,name="getDivisi"),
+    path("getDivisiById/",views.getDivisiById,name="getDivisiById"),
+    path("addDivisi/",views.addDivisi,name="addDivisi"),
+    path("editDivisi/",views.editDivisi,name="editDivisi"),
 
     path("personal/",views.personal,name="personal"),
     path("getPersonal/",views.getPersonal,name="getPersonal"),

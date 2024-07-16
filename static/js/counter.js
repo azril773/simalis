@@ -11,9 +11,10 @@ const counterTabel = new DataTable("#counterTable", {
     headers: { "X-CSRFToken": token },
   },
   columns: [
-    { data: "fields.counter_bagian" },
+    { data: "counter_bagian" },
+    { data: "divisi" },
     {
-      data: "fields.status",
+      data: "status",
       render: (data, type, row, meta) => {
         if (data == "AC") {
           return `<span class="badge bg-success">Active</span>`;
@@ -35,18 +36,28 @@ const selectStatusEdit = $("#statusEdit").selectize({
   maxOptions: 5,
 });
 
+const divisiAddSelectize = $("#divisiAdd").selectize({
+  onChange:function(e){
+    $("#counterAdd").focus()
+  }
+})
+const divisiEditSelectize = $("#divisiEdit").selectize({
+  onChange:function(e){
+    $("#counterEdit").focus()
+  }
+})
 // if id #addModalCounter show event
 $("#addModalCounter").on("show.bs.modal", function (e) {
   $("#counterAdd").val("");
   setTimeout(() => {
-    $("#counterAdd").focus();
+    divisiAddSelectize[0].selectize.focus();
   }, 500);
 });
 
 // if id #editModalCounter show event
 $("#editModalCounter").on("show.bs.modal", function (e) {
   setTimeout(() => {
-    $("#counterEdit").focus();
+    divisiEditSelectize[0].selectize.focus();
   }, 500);
 });
 
@@ -62,6 +73,7 @@ counterTabel.on("click", "#buttonEditModal", function (e) {
     success: (e) => {
       console.log(e);
       $("#counterEdit").val(e.data.fields.counter_bagian);
+      divisiEditSelectize[0].selectize.setValue(e.data.fields.divisi);
       selectStatusEdit[0].selectize.setValue(e.data.fields.status);
       $("#idEdit").val(e.data.pk);
     },
@@ -87,16 +99,18 @@ $("#counterEdit")
 // if id #buttonAddCounter click event
 $("#buttonAddCounter").click(function (e) {
   const counter = $("#counterAdd").val();
+  const divisi = $("#divisiAdd").val();
   $.ajax({
     url: `${ip}/atk/addCounter/`,
     method: "post",
-    data: { counter },
+    data: { counter,divisi },
     headers: { "X-CSRFToken": token },
     success: (e) => {
       counterTabel.ajax.reload();
       addModal.hide();
     },
     error: (e) => {
+      console.log(e)
       $("#msg").append(
         `<div class="alert alert-danger">${e.responseJSON.message}!</div>`
       );
@@ -108,12 +122,13 @@ $("#buttonAddCounter").click(function (e) {
 // if id #buttonEditCounter click event
 $("#buttonEditCounter").click(function (e) {
   const counter = $("#counterEdit").val();
+  const divisi = $("#divisiEdit").val();
   const status = $("#statusEdit").val();
   const id = $("#idEdit").val();
   $.ajax({
     url: `${ip}/atk/editCounter/`,
     method: "post",
-    data: { counter, status, id },
+    data: { counter,divisi, status, id },
     headers: { "X-CSRFToken": token },
     success: (e) => {
       counterTabel.ajax.reload();

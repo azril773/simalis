@@ -10,6 +10,7 @@
         <thead>
             <tr>
                 <th>Counter</th>
+                <th>Divisi</th>
                 <th>Status</th>
                 <th>Aksi</th>
             </tr>
@@ -26,6 +27,15 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
+                <div class="mb-3">
+                    <label for="divisi" class="capitalize mb-[8px]">divisi</label>
+                    <select class="normalize AddSelect" required id="divisiAdd" name="divisi" aria-label="Default select example">
+                      <option selected value="">Open this select menu</option>
+                      {% for d in divisi %}
+                       <option value="{{d.pk}}">{{d.divisi}}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
                 <div class="mb-3">
                     <label for="counterAdd" class="form-label">Counter</label>
                     <input type="text" class="form-control" id="counterAdd" name="counter" required>
@@ -56,6 +66,15 @@
                     </select>
                 </div>
                 <div class="mb-3">
+                    <label for="divisi" class="capitalize mb-[8px]">divisi</label>
+                    <select class="normalize EditSelect" required id="divisiEdit" name="divisi" aria-label="Default select example">
+                      <option selected value="">Open this select menu</option>
+                      {% for d in divisi %}
+                       <option value="{{d.pk}}">{{d.divisi}}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                <div class="mb-3">
                     <label for="counterEdit" class="form-label">Counter</label>
                     <input type="text" class="form-control" id="counterEdit" name="counter" required>
                 </div>
@@ -71,5 +90,5 @@
 
 {% endblock isi %}
 {% block js %}
-<script src="{% static "js/counter.js" %}?2983"></script>
+<script src="{% static "js/counter.js" %}?9238923"></script>
 {% endblock js %}

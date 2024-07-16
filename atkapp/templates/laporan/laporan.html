@@ -1,7 +1,17 @@
 {% extends "../template/base.html" %} {% load static %} {% block isi %}
 
-<div class="w-full overflow-x-auto">
-  <table class="tableLaporan cell-border">
+<div class="w-full">
+  <div class="flex justify-end gap-2">
+    <div class="">
+      <label for="rangeHarian" class="form-label">Pilih Tanggal</label>
+      <input type="date" name="rangeHarian" id="rangeHarian" class='form-control mb-3'>
+    </div>
+    <div class="button mt-8">
+      <button class="btn btn-primary" id="btnFilter">Filter</button>
+    </div>
+
+  </div>
+  <table class="tableLaporan cell-border" id="tableLaporan" style="width:100%"> 
     {% csrf_token %}
     <thead>
       <tr>
@@ -17,7 +27,10 @@
     <tbody></tbody>
   </table>
 </div>
+<div class="flex justify-end">
+  {% comment %} <button class="btn btn-warning mb-5" id="printPdfLaporan">Print PDF</button> {% endcomment %}
+</div>
 {% endblock isi %}
 {% block js %}
-<script src="{% static "js/laporan.js" %}?454545"></script>
+<script src="{% static "js/laporan.js" %}?827837"></script>
 {% endblock js %}

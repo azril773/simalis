@@ -1,0 +1,155 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static "bootstrap-5.3.3-dist/css/bootstrap.min.css" %}">
+    <title>Document</title>
+</head>
+<body>
+    <div class="" style='break-after:page;font-size:9px;'>
+        <div class="row d-flex justify-content-between">
+            <h2>Perincian Pengeluaran Divisi Berbayar / Potong Faktur</h2>
+            <div class="col-12 mx-1 mb-5">
+                <table class="" border='1' cellspacing="0" cellpadding="0">
+                      <thead>
+                        <tr>
+                            <th>Divisi</th>
+                            <th>Tipe Pembayaran</th>
+                            <th>Sub Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for bd in bydivisi %}
+                        {% for tipe in bd.tipe %}
+                        {% if forloop.counter0 > 0 %}
+                        <tr>
+                            <td style="text-transform:capitalize;"><code class='format-text'>{{tipe.tipe_pembayaran}}</code></td>
+                            <td text-align='right'><code class='format-text'>Rp {{tipe.total}}</code></td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td rowspan='2' style="font-size:12px"><code class='format-text'>{{bd.divisi}}</code></td>
+                            <td style="text-transform:capitalize;"><code class='format-text'>{{tipe.tipe_pembayaran}}</code></td>
+                            <td text-align='right'><code class='format-text'>Rp {{tipe.total}}</code></td>
+                        </tr>
+                        {% endif %}
+                        {% endfor %}
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <th colspan='2'>Total</th>
+                        <th><code class='format-text'>Rp {{totalDivisi}}</code></th>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+        <div class="row d-flex justify-content-center">
+            <h2>Perincian Pengeluaran Divisi Non Bayar</h2>
+            <div class="col-12"> 
+                <table class="" cellspacing="0" cellpadding="0">
+                    <thead>
+                        <tr>
+                            <th>Divisi</th>
+                            <th>Sub Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for bc in bydivisiNon %}
+                        <tr>
+                            <td><code class='format-text'>{{bc.divisi}}</code></td>
+                            <td text-align='right'><code class='format-text'>Rp {{bc.total}}</code></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <th>Total</th>
+                        <th text-align='right'><code class='format-text'>Rp {{totalDivisiNon}}</code></th>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+        <div class="row d-flex justify-content-center">
+            <div class="col-12 mt-5">
+                <h2>Pembelian</h2>
+                <table class="" cellspacing="0" cellpadding="0">
+                    <thead>
+                        <tr>
+                            <th>Kategori</th>
+                            <th>Sub Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in pembelian %}
+                        <tr>
+                            <td><code class='format-text'>{{p.kategori}}</code></td>
+                            <td text-align='right'><code class='format-text'>Rp {{p.total}}</code></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <th>Total</th>
+                        <th text-align='right'><code class='format-text'>Rp {{totalPembelian}}</code></th>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+        {% comment %} <div class="row d-flex justify-content-center">
+            <div class="col-12">
+                <table class="">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div> {% endcomment %}
+    </div>
+    {% for d in data %}
+    <h4 class='d-flex justify-content-center mb-3' style="font-family:monospace;font-weight:bold;">Rekap ATK Divisi {{d.divisi}} Bulan {{bulan}} Tahun {{tahun}}</h4>
+    {% if forloop.counter > 0 %}
+    <div class="row d-flex justify-content-between mt-2 gap-3" style="font-size:9px;break-after:page;">
+        {% else %}
+        <div class="row d-flex justify-content-between mt-2 gap-3" style="font-size:9px;">
+    {% endif %}
+        {% for c in d.counter %}
+        <div class="col-3 mt-2 mx-3">
+            <strong class='ml-2'>{{c.counter_bagian}}</strong>
+            <table class='' style='width: 100%;' cellspacing="0" cellpadding="0">
+                <thead>
+                    <tr>
+                        <th>Jenis Barang</th>
+                        <th>Jumlah</th>
+                        <th>Sub Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for brg in c.barang %}
+                    <tr>
+                        <td><code class='format-text'>{{brg.barang}}</code></td>
+                        <td><code class='format-text'>{{brg.qty}}</code></td>
+                        <td style=""><code class='format-text'>Rp {{brg.total}}</code></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <th colspan='2'>Total</th>
+                    <th colspan='1'><code class='format-text'>Rp {{c.subTotal}}</code></th>
+                </tfoot>
+            </table>
+        </div>
+        {% endfor %}
+    </div>
+        {% endfor %}
+</body>
+</html>
+

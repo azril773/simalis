@@ -24,12 +24,13 @@
 </ul>
 {% endif %}
 <div class="w-full overflow-x-auto">
-  <table class="tableBarang cell-border">
+  <table class="tableBarang cell-border" style="width: 100%;">
    {% csrf_token %}
    <thead>
        <tr>
            <th>Nama Barang</th>
-           <th>Harga</th>
+           <th>Harga Beli</th>
+           <th>Harga Jual</th>
            <th>Kategori</th>
            <th>Stok</th>
            <th>Status</th>
@@ -60,9 +61,13 @@
               <option value="{{k.pk}}">{{ k.kategori }}</option>
             {% endfor %}
           </select>
-          <div class="mb-3">
+          {% comment %} <div class="mb-3">
             <label for="harga_barangAdd" class="form-label">Harga Barang</label>
-            <input type="text" max class="form-control" id="harga_barangAdd">
+            <input type="text" max class="form-control" id="harga_barangAdd" value="0">
+          </div> {% endcomment %}
+          <div class="mb-3">
+            <label for="hargaJ_barangAdd" class="form-label">Harga Jual Barang</label>
+            <input type="text" max class="form-control" id="hargaJ_barangAdd" value="0">
           </div>
         </div>
         <div class="modal-footer">
@@ -85,27 +90,31 @@
             <label for="nama_barangEdit" class="form-label">Nama Barang</label>
             <input type="text" class="form-control" id="nama_barangEdit">
           </div>
-          <div class="mb-3">
+          {% comment %} <div class="mb-3">
             <label for="harga_barangEdit" class="form-label">Harga Barang</label>
             <input type="text" class="form-control" id="harga_barangEdit" disabled>
-            <input type="hidden" name="id" id="idEdit">
-          </div>
-          <label for="kategoriEdit">KategoriEdit</label>
+          </div> {% endcomment %}
+          <label for="kategoriEdit">Kategori</label>
           <select class="normalize mt-1 mb-3" id="kategoriEdit" name="kategoriEdit" aria-label="Default select example">
             <option selected value="">Open this select menu</option>
             {% for k in kategori %}
               <option value="{{k.pk}}">{{ k.kategori }}</option>
             {% endfor %}
           </select>
+          <div class="mb-3">
+            <label for="hargaJ_barangEdit" class="form-label">Harga Jual Barang</label>
+            <input type="text" class="form-control" id="hargaJ_barangEdit">
+            <input type="hidden" name="id" id="idEdit">
+          </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
           <button type="button" class="btn btn-primary" id="buttonEditBarang">Save changes</button>
         </div>
-      </div>
+      </div>hargaJ_barangEdit
     </div>
   </div>
    {% endblock isi %}
    {% block js %}
-        <script src="{% static "js/tablebarang.js" %}?92398"></script>
+        <script src="{% static "js/tablebarang.js" %}?2382376"></script>
     {% endblock js %}
