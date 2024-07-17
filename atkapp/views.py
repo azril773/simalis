@@ -12,7 +12,6 @@ from django.contrib.messages import get_messages
 from django.db.models import Q, Sum, F
 from django.template.loader import get_template 
 from django.template import Context
-import pdfkit
 from django.core.files.base import ContentFile
 import os
 from django.http import StreamingHttpResponse
