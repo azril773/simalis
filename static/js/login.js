@@ -9,6 +9,7 @@ $("#editButton").on("click",function(e){
         method:"post",
         headers:{"X-CSRFToken":token},
         success(e){
+            window.location.href = `${ip}/atk/logout`
             $("#msg").append(`<p class="alert alert-success">${e.message}</p>`)
         }
     })

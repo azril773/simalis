@@ -490,7 +490,6 @@ def editPengeluaran(r):
         pengeluaran.tgl_keluar = tgl_keluar
         pengeluaran.master_barang_id = brg
         pengeluaran.counter_id = ctr
-        print(ctr.divisi)
         pengeluaran.divisi = ctr.divisi
         pengeluaran.personal_id = person
         pengeluaran.status = status
@@ -522,7 +521,6 @@ def getPengeluaranRange(r):
     end = r.POST.get("end")
     item = r.POST.get("item")
     spgAll = r.POST.get("spgAll")
-    print(spgAll)
     if item:
         if spgAll:
             # printA(spgAll)
@@ -785,7 +783,6 @@ def getTPengeluaran(r):
 
 @login_required
 def tambahTPengeluaran(r):
-    print(r.POST)
     if r.POST.get("tgl_keluar") != "" and r.POST.get("counter") != "" and r.POST.get("barang") != "" and r.POST.get("qty") != "":
         tgl_keluar = r.POST.get("tgl_keluar")
         brg = r.POST.get("barang")
@@ -960,7 +957,6 @@ def tambahPostPengeluaran(r):
         except:
             msg.append("Counter sudah tidak aktif!")
             continue
-        print(tp.divisi.pk,"sdsdsd")
         p = Pengeluaran(
             tgl_keluar=tp.tgl_keluar,
             qty=tp.qty,
@@ -1032,9 +1028,7 @@ def printPengeluaran(r):
         body = json.loads(data)
         template = get_template("formatLaporan/pengeluaranLaporan.html")
         html = template.render({"data":body})
-        print(body)
         config = pdfkit.configuration(wkhtmltopdf=r"/usr/local/bin/wkhtmltopdf")
-        print(config)
         file = pdfkit.from_string(html,r"static/pdf/pengeluaran.pdf",configuration=config)
         return HttpResponse(file)
     else:
@@ -1047,7 +1041,6 @@ def printPengeluaranSpg(r):
     if r.method  == "POST" :
         data = r.POST.get("data")
         body = json.loads(data)
-        print(body)
         total = 0
         newData= []
         for dt in body:
@@ -1207,7 +1200,6 @@ def printPdfLaporan(r):
         # +++++++++++++++++++++++++++++++++++++++++++ SELECT BERASARKAN STATUS 0 DAN HANYA COUNTER ++++++++++++++++++++++++++++++++++++++++++++++++
         crs.execute("WITH bayar AS(SELECT atkapp_pengeluaran.id,atkapp_pengeluaran.divisi_id,atkapp_pengeluaran.qty, atkapp_master_barang.harga FROM atkapp_pengeluaran JOIN atkapp_master_barang ON atkapp_pengeluaran.master_barang_id_id=atkapp_master_barang.id WHERE atkapp_pengeluaran.status=0 AND MONTH(atkapp_pengeluaran.tgl_keluar) = %s AND YEAR(atkapp_pengeluaran.tgl_keluar) = %s) SELECT SUM(bayar.harga * bayar.qty),bayar.divisi_id FROM bayar GROUP BY bayar.divisi_id",[bulan,tahun])
         for bc in crs.fetchall():
-            print('{:,}'.format(bc[0]))
             try:
                 divisi = Divisi.objects.filter(pk=bc[1])
                 if not divisi.exists():
@@ -1218,7 +1210,6 @@ def printPdfLaporan(r):
                 continue
         
         template = get_template('formatLaporan/semuaLaporanCounter.html')
-        print(bydivisi)
         # options = {
         #     'page-size': 'Letter',
         #     'margin-top': '0.75in',
@@ -1237,7 +1228,6 @@ def printPdfLaporan(r):
         file.write_pdf(r'static/pdf/semuaPengeluaranCounter.pdf',stylesheets=[css])
         return JsonResponse({"data":"success"},status=200,safe=False)
     else:
-        print("sd")
         with open(r'static/pdf/semuaPengeluaranCounter.pdf','rb') as f:
             http = HttpResponse(f.read(),'application/pdf')
             http["Content-Disposition"] = 'filename=laporanCounter'+str(datetime.now())+'.pdf'
@@ -1315,7 +1305,6 @@ def editKategori(r):
             brg = Master_barang.objects.filter(kategori_id=id).values("id")
             arrId = [str(b["id"]) for b in brg] 
             gabung = ",".join(arrId)
-            print(gabung)
             stk = Stok_brg.objects.raw("SELECT * FROM atkapp_stok_brg WHERE created_at IN(select MAX(created_at) from atkapp_stok_brg group by(master_barang_id_id)) AND master_barang_id_id IN("+gabung+")")
             for s in stk:
                 if s.stok > 0:
@@ -1332,7 +1321,6 @@ def editKategori(r):
 @login_required
 def personal(r):
     counter = Counter_bagian.objects.all()
-    print(counter)
     return render(r,"personal/personal.html",{
         "counter":counter
     })
@@ -1366,11 +1354,8 @@ def addPersonal(r):
     if r.method == "POST":
         personal = r.POST.get("person")
         counter = r.POST.get("counter")
-        print(personal,counter)
         cek = Personal.objects.filter(nama=personal)
-        print(cek,"atas")
         if len(cek) > 0:
-            print(cek,"bawah")
             return JsonResponse({"message": "personal sudah ada!"}, status=400, safe=False)
         c = Counter_bagian.objects.get(pk=counter)
         if not c:
@@ -1500,7 +1485,6 @@ def getDivisiById(r):
 def addDivisi(r):
     if r.method == "POST":
         divisi = r.POST.get("divisi")
-        print(divisi)
         if Divisi.objects.filter(divisi=divisi).exists():
             return JsonResponse({"message": "divisi sudah ada!"}, status=400, safe=False)
         d = Divisi(divisi=divisi,status="AC")
@@ -1554,7 +1538,6 @@ def editPassword(r):
     id = r.POST.get("id")
     password = r.POST.get("password")
     get = User.objects.get(pk=id)
-    print(get)
     get.set_password(password)
     get.save()
     return JsonResponse({'status':"ok","message":"berhasil update password"},status=201)
@@ -1564,7 +1547,6 @@ def tambahUser(r):
     username = r.POST.get("username")
     email = r.POST.get("email")
     password = r.POST.get("password")
-    print(password)
     try:
         get = User.objects.create_user(username=username,email=email,password=password)
         get.save()
