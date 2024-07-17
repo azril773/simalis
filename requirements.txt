@@ -2,3 +2,4 @@ Django==5.0.6
 pdfkit
 mysqlclient==2.2.4
 django-import-export==4.1.0
+weasyprint==62.3
