@@ -5,6 +5,7 @@ from django.http import JsonResponse, HttpResponse,FileResponse
 import json
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
+from django.contrib.auth.models import User
 from datetime import datetime
 from django.utils import timezone
 from django.contrib import messages
@@ -1541,3 +1542,32 @@ def editDivisi(r):
 #     # response['Content-Disposition'] = 'attachment;filename=file:///C:/Project/Project-Atk/atk/atkapp/static/pdf/coba.pdf'
 #     # pdf.close()
 #     return FileResponse(pdf)
+
+@login_required
+def login(r):
+    id = r.user.id
+    return render(r,'login/login.html',{"id":id})
+
+
+@login_required
+def editPassword(r):
+    id = r.POST.get("id")
+    password = r.POST.get("password")
+    get = User.objects.get(pk=id)
+    print(get)
+    get.set_password(password)
+    get.save()
+    return JsonResponse({'status':"ok","message":"berhasil update password"},status=201)
+
+@login_required
+def tambahUser(r):
+    username = r.POST.get("username")
+    email = r.POST.get("email")
+    password = r.POST.get("password")
+    print(password)
+    try:
+        get = User.objects.create_user(username=username,email=email,password=password)
+        get.save()
+        return JsonResponse({'status':"ok","message":"berhasil menambahkan user"},status=200)
+    except:
+        return JsonResponse({'status':"err","message":"terjadi kesalahan"},status=400)

@@ -109,4 +109,9 @@ urlpatterns = [
 
     path("logout/",views.lgtr,name="logout"),
     path("counter/",views.counter,name="counter"),
+
+
+    path("loginEdit/",views.login,name="loginEdit"),
+    path("editPassword/",views.editPassword,name="editPassword"),
+    path("tambahUser/",views.tambahUser,name="tambahUser"),
 ]

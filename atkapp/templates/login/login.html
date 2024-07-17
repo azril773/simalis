@@ -1,0 +1,41 @@
+{% extends "../template/base.html" %}
+{% load static %}
+
+
+{% block isi %}  
+        <div id="msg"></div>
+        {% csrf_token %}
+        <label for="ePassword" class='form-label'>Edit Password</label>
+        <input type="text" class="form-control" id='ePassword'>
+        <input type="hidden" class="form-control" id='id' value='{{id}}'>
+        <button class="btn btn-primary mt-2" id="editButton">Edit</button>
+        <div class="my-24">
+            <hr />
+            <div id="msgT" class="mt-2"></div>
+        </div>
+        <h2 class="mb-4 text-xl font-semibold ">Tambah User</h2>
+        <div class="row">
+            <div class="col-6">
+                <label for="username" class='form-label'>Username</label>
+                <input type="text" class="form-control" id='username'>
+            </div>
+            <div class="col-6">
+                <label for="email" class='form-label'>Email</label>
+                <input type="email" class="form-control" id='email'>
+            </div>
+            <div class="col-12">
+                <label for="password" class='form-label'>Password</label>
+                <input type="text" class="form-control" id='password'>
+            </div>
+        </div>
+        <button class="btn btn-primary mt-2" id="tambahButton">Tambah</button>
+
+    {% endblock isi %}
+    {% block js %}
+
+        <script src="{% static "js/login.js" %}">
+            
+        </script>
+
+    {% endblock js %}
+
