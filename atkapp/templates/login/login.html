@@ -6,7 +6,7 @@
         <div id="msg"></div>
         {% csrf_token %}
         <label for="ePassword" class='form-label'>Edit Password</label>
-        <input type="text" class="form-control" id='ePassword'>
+        <input type="password" class="form-control" id='ePassword'>
         <input type="hidden" class="form-control" id='id' value='{{id}}'>
         <button class="btn btn-primary mt-2" id="editButton">Edit</button>
         <div class="my-24">
@@ -25,7 +25,7 @@
             </div>
             <div class="col-12">
                 <label for="password" class='form-label'>Password</label>
-                <input type="text" class="form-control" id='password'>
+                <input type="password" class="form-control" id='password'>
             </div>
         </div>
         <button class="btn btn-primary mt-2" id="tambahButton">Tambah</button>
