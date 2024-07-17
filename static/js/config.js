@@ -1,4 +1,4 @@
-const ip = "http://15.63.254.153:5454";
+const ip = "http://localhost:8000";
 // "http://15.63.254.153:5454";
 let hargas = "";
 function formatInput(e, hrg) {
