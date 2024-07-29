@@ -1548,8 +1548,11 @@ def tambahUser(r):
     email = r.POST.get("email")
     password = r.POST.get("password")
     try:
-        get = User.objects.create_user(username=username,email=email,password=password)
-        get.save()
+        if email == "":
+            get = User.objects.create_user(username=username,password=password)
+        else:
+            get = User.objects.create_user(username=username,email=email,password=password)
+        get.save() 
         return JsonResponse({'status':"ok","message":"berhasil menambahkan user"},status=200)
     except:
         return JsonResponse({'status':"err","message":"terjadi kesalahan"},status=400)

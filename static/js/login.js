@@ -21,7 +21,7 @@ $("#tambahButton").on("click",function(e){
     const password = $("#password").val()
     const username = $("#username").val()
     const email = $("#email").val()
-    if(email == "" || username == "" || password == "") return 
+    if(username == "" || password == "") return 
     $.ajax({
         url:`${ip}/atk/tambahUser/`,
         data:{password,username,email},
