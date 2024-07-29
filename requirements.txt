@@ -1,5 +1,5 @@
-Django==5.0.6
+Django
 pdfkit
-mysqlclient==2.2.4
-django-import-export==4.1.0
+mysqlclient
+django-import-export
 weasyprint

@@ -4,24 +4,17 @@
   <a><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQqwPdqgkrKMfhAhX2gEAbLFfQK1T6r94FEZw&s" width="200" alt="Nest Logo" /></a>
 </p>
 
-## Install PDFKIT and MSYQL
+## Install PDFKIT, MSYQL, weasyprint
 
 ```bash
-pip install pdfkit mysqlclient 
+pip install pdfkit mysqlclient weasyprint
 ```
 
-## Install wkhtmltopdf
+## Install pango library
 
 ```bahs
 #ubuntu
 
-sudo dpkg -i wkhtmltopdf.deb
-```
-
-## Configuration pdfkit with wkhtmltopdf
-
-```bash
-config = pdfkit.config(wkhtmltopdf='path/to/file/wkhtmltopdf')
-file = pdfkit.from_string(file,'path/to/output.pdf',config=config)
+sudo apt-get install -y libpangocairo-1.0-0
 ```
 
