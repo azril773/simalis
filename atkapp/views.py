@@ -1028,9 +1028,10 @@ def printPengeluaran(r):
         body = json.loads(data)
         template = get_template("formatLaporan/pengeluaranLaporan.html")
         html = template.render({"data":body})
-        config = pdfkit.configuration(wkhtmltopdf=r"/usr/local/bin/wkhtmltopdf")
-        file = pdfkit.from_string(html,r"static/pdf/pengeluaran.pdf",configuration=config)
-        return HttpResponse(file)
+        file = weasyprint.HTML(string=html)
+        css = weasyprint.CSS(filename=r'static/bootstrap-5.3.3-dist/css/bootstrap.min.css')
+        fl = file.write_pdf(r"static/pdf/pengeluaran.pdf",css=[css])
+        return HttpResponse(fl)
     else:
          with open(r"static/pdf/pengeluaran.pdf","rb") as fl:
             response = HttpResponse(fl.read(),"application/pdf")
@@ -1052,8 +1053,9 @@ def printPengeluaranSpg(r):
             newData.append(obj)
         template = get_template("formatLaporan/pengeluaranLaporanSpg.html")
         rdr = template.render({"data":body,"total":"{:,}".format(total)})
-        config = pdfkit.configuration(wkhtmltopdf=r"/usr/local/bin/wkhtmltopdf")
-        file = pdfkit.from_string(rdr,r"static/pdf/pengeluaran.pdf",configuration=config)
+        file = weasyprint.HTML(string=rdr)
+        css = weasyprint.CSS(filename=r'static/bootstrap-5.3.3-dist/css/bootstrap.min.css')
+        fl = file.write_pdf(r"static/pdf/pengeluaran.pdf",css=[css])
         return HttpResponse(file)
     else:
         with open(r"static/pdf/pengeluaran.pdf","rb") as fl:
@@ -1076,8 +1078,9 @@ def printPembelian(r):
             newData.append(obj)
         template = get_template("formatLaporan/pembelianLaporan.html")
         rdr = template.render({"data":newData,"total":"{:,}".format(total)})
-        config = pdfkit.configuration(wkhtmltopdf=r"/usr/local/bin/wkhtmltopdf")
-        fl = pdfkit.from_string(rdr,r"static/pdf/pembelian.pdf",configuration=config)
+        file = weasyprint.HTML(string=rdr)
+        css = weasyprint.CSS(filename=r'static/bootstrap-5.3.3-dist/css/bootstrap.min.css')
+        fl = file.write_pdf(r"static/pdf/pembelian.pdf",css=[css])
         return HttpResponse(fl)
     else:
         with open(r"static/pdf/pembelian.pdf","rb") as fl:
