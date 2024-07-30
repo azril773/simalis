@@ -1224,7 +1224,7 @@ def printPdfLaporan(r):
         # cfg = pdfkit.configuration(wkhtmltopdf=r'/usr/local/bin/wkhtmltopdf')
         # file = pdfkit.from_string(ctx,r'static/pdf/semuaPengeluaranCounter.pdf',configuration=cfg,options=options,css=r'static/css/laporan.css')
         file = weasyprint.HTML(string=ctx)
-        css = weasyprint.CSS(filename='/home/azril/atk-project/atk/simalis-crb/static/bootstrap-5.3.3-dist/css/bootstrap.min.css')
+        css = weasyprint.CSS(filename=r'static/bootstrap-5.3.3-dist/css/bootstrap.min.css')
         file.write_pdf(r'static/pdf/semuaPengeluaranCounter.pdf',stylesheets=[css])
         return JsonResponse({"data":"success"},status=200,safe=False)
     else:
