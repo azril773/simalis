@@ -19,7 +19,6 @@ from django.http import StreamingHttpResponse
 from django.db import transaction,connection
 import weasyprint
 import calendar
-
 bulanArr = ['Januari','Februari','Maret',"April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"]
 
 @login_required
@@ -1211,19 +1210,53 @@ def printPdfLaporan(r):
                 bydivisiNon.append({'divisi':divisi[0].divisi,'total':'{:,}'.format(bc[0])})
             except:
                 continue
-        
+        totalPengeluaran = 0
+        data_pengeluaran = []
+        brg = Master_barang.objects.all()
+        obj = {}
+        # print(monthrange(int(tahun),int(bulan)))
+        dr = datetime.strptime("01-"+bulan+"-"+tahun+" 00:00:00","%d-%m-%Y %H:%M:%S")
+        sp = datetime.strptime(str(calendar.monthrange(int(tahun),int(bulan))[1])+"-"+bulan+"-"+tahun+" 23:59:59","%d-%m-%Y %H:%M:%S")
+        for brg in Master_barang.objects.values("id").all():
+            datap = Pengeluaran.objects.filter(master_barang_id_id=brg["id"],tgl_keluar__range=[dr,sp])
+            for d in datap:
+                try:
+                    if d.status == 0:
+                        obj[brg["id"]][0]["tipe"] = "non bayar"
+                        obj[brg["id"]][0]["total"] += d.master_barang_id.harga * d.qty
+                        totalPengeluaran += d.master_barang_id.harga * d.qty
+                    elif d.status == 1:
+                        obj[brg["id"]][1]["tipe"] = "bayar cash"
+                        obj[brg["id"]][1]["total"] += d.harga_jual * d.qty
+                        totalPengeluaran += d.harga_jual * d.qty
+                    else:
+                        obj[brg["id"]][2]["tipe"] = "potong faktur"
+                        obj[brg["id"]][2]["total"] += d.harga_jual * d.qty
+                        totalPengeluaran += d.harga_jual * d.qty
+                except:
+                    if d.status == 0:
+                        totalPengeluaran += d.master_barang_id.harga * d.qty
+                        obj[brg["id"]] = [{"tipe":"non bayar","total":d.master_barang_id.harga * d.qty},{"tipe":"bayar cash","total":0},{"tipe":"potong faktur","total":0}]
+                    elif d.status == 1:
+                        totalPengeluaran += d.harga_jual * d.qty
+                        obj[brg["id"]] = [{"tipe":"non bayar","total":0},{"tipe":"bayar cash","total":d.harga_jual * d.qty},{"tipe":"potong faktur","total":0}]
+                    else:
+                        totalPengeluaran += d.harga_jual * d.qty
+                        obj[brg["id"]] = [{"tipe":"non bayar","total":0},{"tipe":"bayar cash","total":0},{"tipe":"potong faktur","total":d.harga_jual * d.qty}]
         template = get_template('formatLaporan/semuaLaporanCounter.html')
-        # options = {
-        #     'page-size': 'Letter',
-        #     'margin-top': '0.75in',
-        #     'margin-right': '0.75in',
-        #     'margin-bottom': '0.75in',
-        #     'margin-left': '0.75in',
-        #     'encoding': "UTF-8",
-        #     "enable-local-file-access": ""
-        # }
-
-        ctx = template.render({"data":data,'bulan':bulanArr[int(bulan) - 1],'tahun':tahun,'bydivisi':bydivisi,'bydivisiNon':bydivisiNon,'totalDivisiNon':'{:,}'.format(totalDivisiNon),'totalCounter':'{:,}'.format(totalCounter),'totalDivisi':'{:,}'.format(totalDivisi),'pembelian':pembelian,'totalPembelian':'{:,}'.format(totalPembelian)})
+        for k in obj.keys():
+            # print(k)
+            try:
+                print(k)
+                nama_brg = Master_barang.objects.values("barang").get(pk=k)
+                print(nama_brg)
+                for o in obj[k]:
+                    o["total"] = '{:,}'.format(o["total"])
+                o = {"barang":nama_brg["barang"],"data":obj[k]}
+                data_pengeluaran.append(o)
+            except:
+                continue
+        ctx = template.render({"data":data,'bulan':bulanArr[int(bulan) - 1],'tahun':tahun,'bydivisi':bydivisi,'bydivisiNon':bydivisiNon,'totalDivisiNon':'{:,}'.format(totalDivisiNon),'totalCounter':'{:,}'.format(totalCounter),'totalDivisi':'{:,}'.format(totalDivisi),'pembelian':pembelian,'totalPembelian':'{:,}'.format(totalPembelian),"brg":brg,"data_pengeluaran":data_pengeluaran,"totalPengeluaran":'{:,}'.format(totalPengeluaran)})
         # cfg = pdfkit.configuration(wkhtmltopdf=r'/usr/local/bin/wkhtmltopdf')
         # file = pdfkit.from_string(ctx,r'static/pdf/semuaPengeluaranCounter.pdf',configuration=cfg,options=options,css=r'static/css/laporan.css')
         file = weasyprint.HTML(string=ctx)
@@ -1236,27 +1269,6 @@ def printPdfLaporan(r):
             http["Content-Disposition"] = 'filename=laporanCounter'+str(datetime.now())+'.pdf'
             return http    
 
-
-    # <script src="{% static "js/jquery-3.7.1.js" %}"></script>
-    # <script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>
-    # <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    # <script>
-    #     $(document).ready(function(e){
-    #         const {jsPDF} = window.jspdf
-    #         var doc = new jsPDF('p','pt','a4');
-
-    #         var pdfjs = document.querySelector('body');
-
-    #         // Convert HTML to PDF in JavaScript
-    #         doc.html(pdfjs, {
-    #             callback: function(doc) {
-    #                 doc.save("hahay.pdf")
-    #             },
-    #             x:10,
-    #             y:10
-    #         });
-    #             })
-    # </script
 def lgtr(r):
     logout(r) 
     return redirect("login")

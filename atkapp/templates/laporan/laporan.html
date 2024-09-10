@@ -1,17 +1,17 @@
 {% extends "../template/base.html" %} {% load static %} {% block isi %}
 
-<div class="w-full">
-  <div class="flex justify-end gap-2">
+<div class="" style="width: 100%;">
+  <div class="d-flex justify-content-end gap-2">
     <div class="">
       <label for="rangeHarian" class="form-label">Pilih Tanggal</label>
       <input type="date" name="rangeHarian" id="rangeHarian" class='form-control mb-3'>
     </div>
-    <div class="button mt-8">
+    <div class="button " style="margin-top:30px">
       <button class="btn btn-primary" id="btnFilter">Filter</button>
     </div>
 
   </div>
-  <table class="tableLaporan cell-border" id="tableLaporan" style="width:100%"> 
+  <table class="tableLaporan cell-border table" id="tableLaporan" style="width:100%"> 
     {% csrf_token %}
     <thead>
       <tr>
