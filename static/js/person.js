@@ -5,7 +5,7 @@ const addModal = new bootstrap.Modal("#addModalPerson");
 const editModal = new bootstrap.Modal("#editModalPerson");
 const personTabel = new DataTable("#personTable", {
   ajax: {
-    url: `${ip}/atk/getPersonal/`,
+    url: `/atk/getPersonal/`,
     method: "post",
     headers: { "X-CSRFToken": token },
   },
@@ -83,7 +83,7 @@ personTabel.on("click", "#buttonEditModal", function (e) {
   const id = $(this).data("id");
   console.log(id);
   $.ajax({
-    url: `${ip}/atk/getPersonalById/`,
+    url: `/atk/getPersonalById/`,
     method: "post",
     headers: { "X-CSRFToken": token },
     data: { id: id }, // Add this line to send the id in the request body
@@ -118,7 +118,7 @@ $("#buttonAddPerson").click(function (e) {
   const person = $("#personAdd").val();
   const counter = $("#counterAdd").val();
   $.ajax({
-    url: `${ip}/atk/addPersonal/`,
+    url: `/atk/addPersonal/`,
     method: "post",
     data: { person, counter },
     headers: { "X-CSRFToken": token },
@@ -143,7 +143,7 @@ $("#buttonEditPerson").click(function (e) {
     console.log(status)
   const id = $("#idEdit").val();
   $.ajax({
-    url: `${ip}/atk/editPersonal/`,
+    url: `/atk/editPersonal/`,
     method: "post",
     data: { person, counter,status, id },
     headers: { "X-CSRFToken": token },

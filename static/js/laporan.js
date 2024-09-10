@@ -7,7 +7,7 @@ $("#btnFilter").on("click", function (e) {
   $("#tableLaporan").DataTable().destroy()
   const tableD = $("#tableLaporan").DataTable({
     ajax: {
-      url: `${ip}/atk/rangeHarian/`,
+      url: `/atk/rangeHarian/`,
       method: "post",
       data:{rangeHarian},
       headers: { "X-CSRFToken": token },
@@ -94,7 +94,7 @@ $("#btnFilter").on("click", function (e) {
 
 $("#printPdfLaporan").on("click",(e) => {
   $.ajax({
-    url:`${ip}/atk/printLaporanHarian/`,
+    url:`/atk/printLaporanHarian/`,
     method:"post",
     data:{data:localStorage.getItem("laporan")},
     headers:{"X-CSRFToken":token},

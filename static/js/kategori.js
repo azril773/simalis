@@ -5,7 +5,7 @@ const addModal = new bootstrap.Modal("#addModalKategori");
 const editModal = new bootstrap.Modal("#editModalKategori");
 const kategoriTabel = new DataTable("#kategoriTable", {
   ajax: {
-    url: `${ip}/atk/getKategori/`,
+    url: `/atk/getKategori/`,
     method: "post",
     headers: { "X-CSRFToken": token },
   },
@@ -57,7 +57,7 @@ kategoriTabel.on("click", "#buttonEditModal", function (e) {
   const id = $(this).data("id");
   console.log(id);
   $.ajax({
-    url: `${ip}/atk/getKategoriById/`,
+    url: `/atk/getKategoriById/`,
     method: "post",
     headers: { "X-CSRFToken": token },
     data: { id: id }, // Add this line to send the id in the request body
@@ -93,7 +93,7 @@ $("#buttonAddKategori").click(function (e) {
   const status = $("#statusAdd").val();
   console.log(status);
   $.ajax({
-    url: `${ip}/atk/addKategori/`,
+    url: `/atk/addKategori/`,
     method: "post",
     data: { kategori, status },
     headers: { "X-CSRFToken": token },
@@ -116,7 +116,7 @@ $("#buttonEditKategori").click(function (e) {
   const status = $("#statusEdit").val();
   const id = $("#idEdit").val();
   $.ajax({
-    url: `${ip}/atk/editKategori/`,
+    url: `/atk/editKategori/`,
     method: "post",
     data: { kategori, status, id },
     headers: { "X-CSRFToken": token },

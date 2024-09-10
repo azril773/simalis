@@ -32,7 +32,7 @@ $(window).on("keydown", function (e) {
 
 const getTPembelian = () => {
   $.ajax({
-    url: `${ip}/atk/getTPembelian/`,
+    url: `/atk/getTPembelian/`,
     method: "post",
     headers: { "X-CSRFToken": token },
     success: (e) => {
@@ -43,7 +43,7 @@ const getTPembelian = () => {
 const table = new DataTable(".tablePembelian", {
   order: [[0, "desc"]],
   ajax: {
-    url: `${ip}/atk/getPembelian/`,
+    url: `/atk/getPembelian/`,
     method: "post",
     headers: { "X-CSRFToken": token },
   },
@@ -175,7 +175,7 @@ $("table").click(function (e) {
     $("#tgl_beliEdit").val("");
     const id = e.target.getAttribute("data-id");
     $.ajax({
-      url: `${ip}/atk/getPembelianById/`,
+      url: `/atk/getPembelianById/`,
       method: "post",
       data: { id },
       headers: { "X-CSRFToken": token },
@@ -237,7 +237,7 @@ $("#editPembelian").click(function (e) {
   const qty = $("#qtyEdit").val().split(".").join("");
   const harga = $("#hargaEdit").val().split(".").join("");
   $.ajax({
-    url: `${ip}/atk/editPembelian/`,
+    url: `/atk/editPembelian/`,
     method: "post",
     data: { id, date, barang, harga, qty },
     headers: { "X-CSRFToken": token },
@@ -261,7 +261,7 @@ function changeBarangSelectize(id) {
   if (id == "") return;
   // const harga = $('option:selected', this).attr("data-harga")
   $.ajax({
-    url: `${ip}/atk/getBarangById/`,
+    url: `/atk/getBarangById/`,
     method: "post",
     headers: { "X-CSRFToken": token },
     data: { id },
@@ -314,7 +314,7 @@ $("#qtyAdd")
 const tableT = new DataTable(".tableTPembelian", {
   order: [[1, "desc"]],
   ajax: {
-    url: `${ip}/atk/getTPembelian/`,
+    url: `/atk/getTPembelian/`,
     method: "post",
     headers: { "X-CSRFToken": token },
   },
@@ -412,7 +412,7 @@ $("#addPembelian").on("click", function (e) {
   const harga = $("#hargaAdd").val().split(".").join("");
   const qty = $("#qtyAdd").val().split(".").join("");
   $.ajax({
-    url: `${ip}/atk/tambahTPembelian/`,
+    url: `/atk/tambahTPembelian/`,
     method: "post",
     data: { tgl_beli: format, barang, harga, qty },
     headers: { "X-CSRFToken": token },
@@ -472,7 +472,7 @@ $("#buttonPostSelect").click(function (e) {
 
 const postAjax = (id) => {
   $.ajax({
-    url: `${ip}/atk/tambahPostPembelian/`,
+    url: `/atk/tambahPostPembelian/`,
     method: "post",
     data: { id: idSelect },
     headers: { "X-CSRFToken": token },
@@ -505,7 +505,7 @@ tableT.on("click", "tbody tr", async function (e) {
     modalEditT.show();
     posting.hide();
     const data = await $.ajax({
-      url: `${ip}/atk/getTPembelianById/`,
+      url: `/atk/getTPembelianById/`,
       method: "post",
       data: { id },
       headers: { "X-CSRFToken": token },
@@ -555,7 +555,7 @@ tableT.on("click", "tbody tr", async function (e) {
     $("#idTEdit").val(data.data.pk);
   } else if($(e.target).is("td>span>button.deleteTButton")) {
     $.ajax({
-      url: `${ip}/atk/deleteTPembelian/`,
+      url: `/atk/deleteTPembelian/`,
       method: "post",
       data: { id },
       headers: { "X-CSRFToken": token },
@@ -575,7 +575,7 @@ $("#editTPembelian").click(function () {
   const id = $("#idTEdit").val();
   console.log(barang, harga, tgl_beli, qty, id);
   $.ajax({
-    url: `${ip}/atk/editTPembelian/`,
+    url: `/atk/editTPembelian/`,
     method: "post",
     data: { id, qty, harga, barang, tgl_beli },
     headers: { "X-CSRFToken": token },

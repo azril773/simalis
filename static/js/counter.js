@@ -6,7 +6,7 @@ const editModal = new bootstrap.Modal("#editModalCounter");
 const counterTabel = new DataTable("#counterTable", {
   responsive: true,
   ajax: {
-    url: `${ip}/atk/getCounter/`,
+    url: `/atk/getCounter/`,
     method: "post",
     headers: { "X-CSRFToken": token },
   },
@@ -66,7 +66,7 @@ counterTabel.on("click", "#buttonEditModal", function (e) {
   const id = $(this).data("id");
   console.log(id);
   $.ajax({
-    url: `${ip}/atk/getCounterById/`,
+    url: `/atk/getCounterById/`,
     method: "post",
     headers: { "X-CSRFToken": token },
     data: { id: id }, // Add this line to send the id in the request body
@@ -101,7 +101,7 @@ $("#buttonAddCounter").click(function (e) {
   const counter = $("#counterAdd").val();
   const divisi = $("#divisiAdd").val();
   $.ajax({
-    url: `${ip}/atk/addCounter/`,
+    url: `/atk/addCounter/`,
     method: "post",
     data: { counter,divisi },
     headers: { "X-CSRFToken": token },
@@ -126,7 +126,7 @@ $("#buttonEditCounter").click(function (e) {
   const status = $("#statusEdit").val();
   const id = $("#idEdit").val();
   $.ajax({
-    url: `${ip}/atk/editCounter/`,
+    url: `/atk/editCounter/`,
     method: "post",
     data: { counter,divisi, status, id },
     headers: { "X-CSRFToken": token },

@@ -6,7 +6,7 @@ const editModal = new bootstrap.Modal("#editModalDivisi");
 const divisiTabel = new DataTable("#divisiTable", {
   responsive: true,
   ajax: {
-    url: `${ip}/atk/getDivisi/`,
+    url: `/atk/getDivisi/`,
     method: "post",
     headers: { "X-CSRFToken": token },
   },
@@ -54,7 +54,7 @@ divisiTabel.on("click", "#buttonEditModal", function (e) {
   const id = $(this).data("id");
   console.log(id);
   $.ajax({
-    url: `${ip}/atk/getDivisiById/`,
+    url: `/atk/getDivisiById/`,
     method: "post",
     headers: { "X-CSRFToken": token },
     data: { id: id }, // Add this line to send the id in the request body
@@ -87,7 +87,7 @@ $("#buttonAddDivisi").click(function (e) {
   const divisi = $("#divisiAdd").val();
   console.log(divisi)
   $.ajax({
-    url: `${ip}/atk/addDivisi/`,
+    url: `/atk/addDivisi/`,
     method: "post",
     data: { divisi },
     headers: { "X-CSRFToken": token },
@@ -111,7 +111,7 @@ $("#buttonEditDivisi").click(function (e) {
   const status = $("#statusEdit").val();
   const id = $("#idEdit").val();
   $.ajax({
-    url: `${ip}/atk/editDivisi/`,
+    url: `/atk/editDivisi/`,
     method: "post",
     data: { divisi, status, id },
     headers: { "X-CSRFToken": token },

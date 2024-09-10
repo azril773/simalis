@@ -32,7 +32,7 @@ let idSelect = [];
 
 const getTPengeluaran = () => {
   $.ajax({
-    url: `${ip}/atk/getTPengeluaran/`,
+    url: `/atk/getTPengeluaran/`,
     method: "post",
     headers: { "X-CSRFToken": token },
     success: (e) => {
@@ -44,7 +44,7 @@ const getTPengeluaran = () => {
 const table = new DataTable(".tablePengeluaran", {
   order: [[0, "desc"]],
   ajax: {
-    url: `${ip}/atk/getPengeluaran/`,
+    url: `/atk/getPengeluaran/`,
     method: "post",
     headers: { "X-CSRFToken": token },
   },
@@ -140,7 +140,7 @@ const table = new DataTable(".tablePengeluaran", {
 const tableT = new DataTable(".tableTPengeluaran", {
   order: [[1, "desc"]],
   ajax: {
-    url: `${ip}/atk/getTPengeluaran/`,
+    url: `/atk/getTPengeluaran/`,
     type: "post",
     headers: { "X-CSRFToken": token },
   },
@@ -260,7 +260,7 @@ const statusAddSelectize = $("#statusAdd").selectize({
 const barangAddSelectize = $("#barangAdd").selectize({
   onChange: function (e) {
     $.ajax({
-      url:`${ip}/atk/getBarangById/`,
+      url:`/atk/getBarangById/`,
       method:"post",
       data:{id:e},
       headers:{"X-CSRFToken":token},
@@ -367,7 +367,7 @@ function personChangeEdit(id) {
     return;
   }
   $.ajax({
-    url: `${ip}/atk/getPersonById/`,
+    url: `/atk/getPersonById/`,
     method: "post",
     data: { id },
     headers: { "X-CSRFToken": token },
@@ -389,7 +389,7 @@ function counterChangeAdd(id) {
       return;
     }
     $.ajax({
-      url: `${ip}/atk/getCounterById/`,
+      url: `/atk/getCounterById/`,
       method: "post",
       data: { id },
       headers: { "X-CSRFToken": token },
@@ -410,7 +410,7 @@ function counterChangeEdit(id) {
       return;
     }
     $.ajax({
-      url: `${ip}/atk/getCounterById/`,
+      url: `/atk/getCounterById/`,
       method: "post",
       data: { id },
       headers: { "X-CSRFToken": token },
@@ -431,7 +431,7 @@ function counterChangeTEdit(id) {
       return;
     }
     $.ajax({
-      url: `${ip}/atk/getCounterById/`,
+      url: `/atk/getCounterById/`,
       method: "post",
       data: { id },
       headers: { "X-CSRFToken": token },
@@ -464,7 +464,7 @@ $("table").click(function (e) {
     $("#tgl_keluarEdit").val("");
     const id = e.target.getAttribute("data-id");
     $.ajax({
-      url: `${ip}/atk/getPengeluaranById/`,
+      url: `/atk/getPengeluaranById/`,
       method: "post",
       data: { id },
       headers: { "X-CSRFToken": token },
@@ -529,7 +529,7 @@ $(".tableTPengeluaran").on("click", "tbody tr", function (e) {
   const barang = barangTEditSelectize[0].selectize;
   if ($(e.target).is("span>a.editTModalButton")) {
     $.ajax({
-      url: `${ip}/atk/getTPengeluaranById/`,
+      url: `/atk/getTPengeluaranById/`,
       method: "post",
       data: { id },
       headers: { "X-CSRFToken": token },
@@ -554,7 +554,7 @@ $(".tableTPengeluaran").on("click", "tbody tr", function (e) {
     });
   }else if($(e.target).is("span>a.deleteTButton")){
     $.ajax({
-      url: `${ip}/atk/deleteTPengeluaran/`,
+      url: `/atk/deleteTPengeluaran/`,
       method: "post",
       data: { id },
       headers: { "X-CSRFToken": token },
@@ -581,7 +581,7 @@ $("#editPengeluaran").click(function (e) {
   const qty = $("#qtyEdit").val().split(".").join("");
   const status = $("#statusEdit").val();
   $.ajax({
-    url: `${ip}/atk/editPengeluaran/`,
+    url: `/atk/editPengeluaran/`,
     method: "post",
     data: { id, tgl_keluar, barang, counter,divisi, person, qty,status },
     headers: { "X-CSRFToken": token },
@@ -609,7 +609,7 @@ $("#addPengeluaran").click(function (e) {
   const status = $("#statusAdd").val();
 
   $.ajax({
-    url: `${ip}/atk/tambahTPengeluaran/`,
+    url: `/atk/tambahTPengeluaran/`,
     method: "post",
     data: { tgl_keluar, counter, barang, qty, person,status },
     headers: { "X-CSRFToken": token },
@@ -646,7 +646,7 @@ $("#editTPengeluaran").click(function (e) {
   const status = $("#statusTEdit").val();
   const qty = $("#qtyTEdit").val().split(".").join("")
   $.ajax({
-    url: `${ip}/atk/editTPengeluaran/`,
+    url: `/atk/editTPengeluaran/`,
     method: "post",
     data: { id, qty, tgl_keluar, barang, counter,divisi, person,status },
     headers: { "X-CSRFToken": token },
@@ -683,7 +683,7 @@ $("#buttonPostSelect").click(function (e) {
 
 const postAjax = (id) => {
   $.ajax({
-    url: `${ip}/atk/tambahPostPengeluaran/`,
+    url: `/atk/tambahPostPengeluaran/`,
     method: "post",
     data: { id: idSelect },
     headers: { "X-CSRFToken": token },
@@ -726,7 +726,7 @@ function personChangeAdd(id) {
     return;
   }
   $.ajax({
-    url: `${ip}/atk/getPersonById/`,
+    url: `/atk/getPersonById/`,
     method: "post",
     data: { id },
     headers: { "X-CSRFToken": token },
@@ -792,7 +792,7 @@ function personChangeTEdit(id) {
     return;
   }
   $.ajax({
-    url: `${ip}/atk/getPersonById/`,
+    url: `/atk/getPersonById/`,
     method: "post",
     data: { id },
     headers: { "X-CSRFToken": token },

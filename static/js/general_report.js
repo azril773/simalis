@@ -40,7 +40,7 @@ $("#searchPengeluaran").on("click", (e) => {
     $("#pengeluaranSpg").addClass("hidden");
     const newTable = new DataTable("#pengeluaran", {
       ajax: {
-        url: `${ip}/atk/getPengeluaranRange/`,
+        url: `/atk/getPengeluaranRange/`,
         method: "post",
         data: { start, end, item:"", spgAll:'' },
         headers: { "X-CSRFToken": token },
@@ -142,12 +142,12 @@ $("#printPdfPengeluaran").on("click", function (e, i, u, d) {
   if (!data) return false;
   const token = document.querySelector("[name=csrfmiddlewaretoken]").value;
   $.ajax({
-    url: `${ip}/atk/printPengeluaran/`,
+    url: `/atk/printPengeluaran/`,
     method: "post",
     data: { data: data },
     headers: { "X-CSRFToken": token },
     success: (e) => {
-      window.open(`${ip}/atk/printPengeluaran/`,'_blank');
+      window.open(`/atk/printPengeluaran/`,'_blank');
     },
   });
 });
@@ -166,7 +166,7 @@ $("#searchPembelian").on("click", function (e) {
   $("#pembelian").DataTable().destroy();
   const newTable = new DataTable("#pembelian", {
     ajax: {
-      url: `${ip}/atk/getPembelianRange/`,
+      url: `/atk/getPembelianRange/`,
       method: "post",
       data: { start, end, item },
       headers: { "X-CSRFToken": token },
@@ -281,12 +281,12 @@ $("#printPdfPembelian").on("click", function (e, i, u, d) {
   if (!data) return false;
   const token = document.querySelector("[name=csrfmiddlewaretoken]").value;
   $.ajax({
-    url: `${ip}/atk/printPembelian/`,
+    url: `/atk/printPembelian/`,
     method: "post",
     data: { data: data },
     headers: { "X-CSRFToken": token },
     success: (e) => {
-      window.open(`${ip}/atk/printPembelian/`,'_blank');
+      window.open(`/atk/printPembelian/`,'_blank');
     },
   });
 });
@@ -327,12 +327,12 @@ $("#printPdfLaporan").on("click",(e) => {
   const bulan = $("#bulan").val()
   const tahun = $("#tahun").val()
   $.ajax({
-    url:`${ip}/atk/printPdfLaporan/`,
+    url:`/atk/printPdfLaporan/`,
     method:'post',
     data:{bulan,tahun},
     headers:{"X-CSRFToken":token},
     success(e){
-      window.open(`${ip}/atk/printPdfLaporan/`,"_blank")
+      window.open(`/atk/printPdfLaporan/`,"_blank")
     }
   })
 })
@@ -355,7 +355,7 @@ $("#printPdfLaporan").on("click",(e) => {
 //     $("#printPdfPengeluaranSpg").removeClass("hidden");
 //     const newTable = new DataTable("#pengeluaranSpg", {
 //       ajax: {
-//         url: `${ip}/atk/getPengeluaranRange/`,
+//         url: `/atk/getPengeluaranRange/`,
 //         method: "post",
 //         data: { start, end, item, spgAll },
 //         headers: { "X-CSRFToken": token },

@@ -5,12 +5,12 @@ $("#editButton").on("click",function(e){
     if(password == "") return 
     const id = $("#id").val()
     $.ajax({
-        url:`${ip}/atk/editPassword/`,
+        url:`/atk/editPassword/`,
         data:{password,id},
         method:"post",
         headers:{"X-CSRFToken":token},
         success(e){
-            window.location.href = `${ip}/atk/logout`
+            window.location.href = `/atk/logout`
             $("#msg").append(`<p class="alert alert-success">${e.message}</p>`)
         }
     })
@@ -23,7 +23,7 @@ $("#tambahButton").on("click",function(e){
     const email = $("#email").val()
     if(username == "" || password == "") return 
     $.ajax({
-        url:`${ip}/atk/tambahUser/`,
+        url:`/atk/tambahUser/`,
         data:{password,username,email},
         method:"post",
         headers:{"X-CSRFToken":token},
