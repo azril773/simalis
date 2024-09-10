@@ -52,3 +52,4 @@ atk/settings.py
 env
 static/js/config.js
 static/pdf
+atkapp/migrations
