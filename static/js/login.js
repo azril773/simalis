@@ -42,17 +42,17 @@ $("#ePassword").off("keydown").on("keydown",function(e){
         $("#editButton").click()
     }
 })
-$("#username").off("keydown").on("keydown",function(){
+$("#username").off("keydown").on("keydown",function(e){
     if(e.key == "Enter"){
     $("#email").focus()
     }
 })
-$("#email").off("keydown").on("keydown",function(){
+$("#email").off("keydown").on("keydown",function(e){
     if(e.key == "Enter"){
     $("#password").focus()
     }
 })
-$("#password").off("keydown").on("keydown",function(){
+$("#password").off("keydown").on("keydown",function(e){
     if(e.key == "Enter"){
     $("#tambahButton").click()
     }

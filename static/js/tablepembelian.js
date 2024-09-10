@@ -5,7 +5,6 @@ const modalEditT = new bootstrap.Modal("#modalEditTPembelian");
 const modalAddT = new bootstrap.Modal("#modalAddTPembelian");
 const posting = new bootstrap.Modal("#posting");
 let idSelect = [];
-
 $(window).on("keydown", function (e) {
   if (e.key == "Escape") {
     modalAddT.hide();
@@ -385,8 +384,8 @@ const tableT = new DataTable(".tableTPembelian", {
       data: "aksi",
       render: function (data, type, row, meta) {
         return `<span class="flex gap-2">
-        <a class="btn btn-primary editModalTButton" data-id="${data}">Edit</a>
-        <a class="btn btn-danger deleteTButton" data-id="${data}">Delete</a>
+        <button class="btn btn-primary editModalTButton" data-id="${data}">Edit</button>
+        <button class="btn btn-danger deleteTButton" data-id="${data}">Delete</button>
         </span>`;
       },
     },
@@ -443,8 +442,8 @@ tableT.on("click", "tbody tr", async (e) => {
   // }
   if (
     !$(e.target).is("input") &&
-    !$(e.target).is("td>span>a.editModalTButton") &&
-    !$(e.target).is("td>span>a.deleteTButton")
+    !$(e.target).is("td>span>button.editModalTButton") &&
+    !$(e.target).is("td>span>button.deleteTButton")
   ) {
     if ($(e.currentTarget).find("td:first").find("input").prop("checked")) {
       $(e.currentTarget).find("td:first").find("input").prop("checked", false);
@@ -502,7 +501,7 @@ getTPembelian();
 
 tableT.on("click", "tbody tr", async function (e) {
   const id = $(e.target).attr("data-id");
-  if ($(e.target).is("td>span>a.editModalTButton")) {
+  if ($(e.target).is("td>span>button.editModalTButton")) {
     modalEditT.show();
     posting.hide();
     const data = await $.ajax({
@@ -554,7 +553,7 @@ tableT.on("click", "tbody tr", async function (e) {
       .split(",")[0];
     $("#qtyTEdit").val(qty);
     $("#idTEdit").val(data.data.pk);
-  } else if($(e.target).is("td>span>a.deleteTButton")) {
+  } else if($(e.target).is("td>span>button.deleteTButton")) {
     $.ajax({
       url: `${ip}/atk/deleteTPembelian/`,
       method: "post",

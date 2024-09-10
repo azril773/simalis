@@ -1,18 +1,20 @@
 const token = document.querySelector("[name=csrfmiddlewaretoken]").value;
-const modalAdd = new bootstrap.Modal("#addModalBarang");
+const modalAdd = new bootstrap.Modal("#addModalBarang",{
+  keyboard:false
+});
 const modalEdit = new bootstrap.Modal("#editModalBarang");
 
-$(window).on("keydown", function (e) {
-  if (e.key == "Escape") {
-    modalAdd.hide();
-    modalEdit.hide();
-  }
+// $(window).on("keydown", function (e) {
+//   if (e.key == "Escape") {
+//     modalAdd.hide();
+//     modalEdit.hide();
+//   }
 
   // if click alt+a modal add show up
-  if (e.altKey && e.key == "a") {
-    modalAdd.show();
-  }
-});
+//   if (e.altKey && e.key == "a") {
+//     modalAdd.show();
+//   }
+// });
 
 $("#addModalBarang").on("show.bs.modal", function (e) {
   console.log(e);
@@ -23,7 +25,7 @@ $("#addModalBarang").on("show.bs.modal", function (e) {
 
 const table = new DataTable(".tableBarang", {
   ajax: {
-    url: `${ip}/atk/getBarang/`,
+    url: `/atk/getBarang/`,
     type: "get",
     headers: { "X-CSRFToken": token },
   },
@@ -94,7 +96,7 @@ $(".tableBarang").click(function (e) {
   if (e.target.classList.contains("modalButton")) {
     const id = e.target.getAttribute("data-id");
     $.ajax({
-      url: `${ip}/atk/getBarangById/`,
+      url: `/atk/getBarangById/`,
       type: "post",
       data: { id },
       headers: { "X-CSRFToken": token },
@@ -120,7 +122,7 @@ $("#buttonEditBarang").click(function (e) {
   const id = $("#idEdit").val();
   console.log(id);
   $.ajax({
-    url: `${ip}/atk/editBarang/`,
+    url: `/atk/editBarang/`,
     type: "post",
     data: { id, nama_barang,harga_jual:hargaJ_barang, kategori },
     headers: { "X-CSRFToken": token },
@@ -144,7 +146,7 @@ $("#buttonAddBarang").click(function (e) {
   const hargaJ_barang = $("#hargaJ_barangAdd").val().split(".").join("");
   const kategoris = $("#kategoriAdd").val();
   $.ajax({
-    url: `${ip}/atk/tambahBarang/`,
+    url: `/atk/tambahBarang/`,
     type: "post",
     data: { nama_barang,harga_jual:hargaJ_barang, kategori:kategoris },
     headers: { "X-CSRFToken": token },
@@ -152,8 +154,8 @@ $("#buttonAddBarang").click(function (e) {
       const nama_barang = $("#nama_barangAdd").val("");
       const hargaJ_barang = $("#hargaJ_barangAdd").val("0");
       kategori[0].selectize.clear();
-      table.ajax.reload();
       modalAdd.hide();
+      table.ajax.reload();
     },
   });
 });

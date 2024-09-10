@@ -95,6 +95,42 @@
                 </table>
             </div>
         </div>
+        <div class="row d-flex justify-content-center">
+            <div class="col-12 mt-5">
+                <h2>Pengeluaran Barang</h2>
+                <table class="" cellspacing="0" cellpadding="0">
+                    <thead>
+                        <tr>
+                            <th>Barang</th>
+                            <th>Tipe Pembayaran</th>
+                            <th>Sub Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in data_pengeluaran %}
+                            {% for d in p.data %}
+                                {% if forloop.counter0 > 0 %}
+                                    <tr>
+                                        <td><code class='format-text'>{{d.tipe}}</code></td>
+                                        <td text-align='right'><code class='format-text'>Rp {{d.total}}</code></td>
+                                    </tr>
+                                {% else %}
+                                <tr>
+                                    <td rowspan="3"><code class='format-text'>{{p.barang}}</code></td>
+                                    <td><code class='format-text'>{{d.tipe}}</code></td>
+                                    <td text-align='right'><code class='format-text'>Rp {{d.total}}</code></td>
+                                </tr>
+                                {% endif %}
+                            {% endfor %}
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <th colspan="2">Total</th>
+                        <th text-align='right'><code class='format-text'>Rp {{totalPengeluaran}}</code></th>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
         {% comment %} <div class="row d-flex justify-content-center">
             <div class="col-12">
                 <table class="">

@@ -17,39 +17,21 @@
     <input type="text" name="daterange" id="dateRangePembelian" class="form-control w-full" />
   </div>
 </div> {% endcomment %}
-<div class="w-full flex justify-between">
-  <div class="flex gap-2">
+<div class="d-flex justify-content-between" style="width: 100%;">
+  <div class="d-flex gap-2">
     <button href="" class="btn btn-secondary position-relative" id="postingAdd" data-bs-toggle="modal" data-bs-target="#posting">
       Posting
       <span class="position-absolute top-0 start-100 count-tPembelian translate-middle badge rounded-pill bg-danger">
         0
       </span>
     </button>
-    <span class="flex flex-wrap items-center gap-x-1 text-sm text-gray-600 dark:text-neutral-400">
-      <kbd class="min-h-[30px] inline-flex justify-center items-center py-1 px-1.5 bg-gray-200 font-mono text-sm text-gray-800 rounded-md">
-        alt
-      </kbd>
-      +
-      <kbd class="min-h-[30px] inline-flex justify-center items-center py-1 px-1.5 bg-gray-200 font-mono text-sm text-gray-800 rounded-md">
-        p
-      </kbd>
-    </span>
   </div>
-  <div class="flex gap-2">
-    <span class="flex flex-wrap items-center gap-x-1 text-sm text-gray-600 dark:text-neutral-400">
-      <kbd class="min-h-[30px] inline-flex justify-center items-center py-1 px-1.5 bg-gray-200 font-mono text-sm text-gray-800 rounded-md">
-        alt
-      </kbd>
-      +
-      <kbd class="min-h-[30px] inline-flex justify-center items-center py-1 px-1.5 bg-gray-200 font-mono text-sm text-gray-800 rounded-md">
-        a
-      </kbd>
-    </span>
+  <div class="d-flex gap-2">
     <button href="" class="btn btn-primary" id="buttonAdd" data-bs-toggle="modal" data-bs-target="#modalAddTPembelian">Add Pembelian</button>
   </div>
 </div>
 <div class="w-full overflow-x-auto">
-  <table class="tablePembelian cell-border" style="width: 100%;">
+  <table class="tablePembelian cell-border table" style="width: 100%;">
    {% csrf_token %}
    <thead>
        <tr>
@@ -197,15 +179,15 @@
   </div>
 
 
-  <div class="modal modal-lg fade" id="posting" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-scrollable">
+  <div class="modal fade" id="posting" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
       <div class="modal-content">
         <div class="modal-header">
           <h1 class="modal-title fs-5" id="staticBackdropLabel"><strong>Posting Pembelian</strong></h1>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <table class="tableTPembelian cell-border w-full" style="width: 100%;">
+          <table class="tableTPembelian cell-border w-full table" style="width: 100%;">
             {% csrf_token %}
             <thead class="w-full">
                 <tr>
@@ -226,14 +208,14 @@
         </div>
         <div class="modal-footer">
             <button href="" class="btn btn-primary mx-[10px]" id="buttonPostSelect">Post Selected Row</button>
-            <button href="" class="btn btn-warning text-white" id="buttonPostAll">Post All</button>
+            <button href="" class="btn btn-warning" id="buttonPostAll">Post All</button>
         </div>
       </div>
     </div>
   </div>
-
+  
   
    {% endblock isi %}
    {% block js %}
-    <script src="{% static "js/tablepembelian.js" %}?378747"></script>
+    <script src="{% static "js/tablepembelian.js" %}?546445"></script>
   {% endblock js %}

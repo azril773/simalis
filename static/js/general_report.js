@@ -152,20 +152,6 @@ $("#printPdfPengeluaran").on("click", function (e, i, u, d) {
   });
 });
 
-$("#printPdfPengeluaranSpg").on("click", function (e, i, u, d) {
-  const data = localStorage.getItem("printPengeluaran");
-  if (!data) return false;
-  const token = document.querySelector("[name=csrfmiddlewaretoken]").value;
-  $.ajax({
-    url: `${ip}/atk/printPengeluaranSpg/`,
-    method: "post",
-    data: { data: data },
-    headers: { "X-CSRFToken": token },
-    success: (e) => {
-      window.open(`${ip}/atk/printPengeluaranSpg/`,"_blank");
-    },
-  });
-});
 
 $("#searchPembelian").on("click", function (e) {
   const date = $("#dateRangePembelian").val().split("-");
@@ -254,14 +240,14 @@ $("#searchPembelian").on("click", function (e) {
     footerCallback: function (tfoot, data, start, end, display) {
       let api = this.api();
       const page = api
-        .column(4, { page: "current" })
+        .column(5, { page: "current" })
         .data()
         .reduce((a, b) => parseInt(a) + parseInt(b), 0);
       const total = api
-        .column(4)
+        .column(5)
         .data()
         .reduce((a, b) => parseInt(a) + parseInt(b), 0);
-      api.column(4).footer().innerHTML = `${page.toLocaleString("id-ID", {
+      api.column(5).footer().innerHTML = `${page.toLocaleString("id-ID", {
         currency: "IDR",
         style: "currency",
       })} (${total.toLocaleString("id-ID", {

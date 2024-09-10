@@ -4,16 +4,7 @@
 
 {% block isi %}
 <span id="msg"></span>
-<div class="w-full flex justify-end gap-3">
-  <span class="flex flex-wrap items-center gap-x-1 text-sm text-gray-600 dark:text-neutral-400">
-    <kbd class="min-h-[30px] inline-flex justify-center items-center py-1 px-1.5 bg-gray-200 font-mono text-sm text-gray-800 rounded-md">
-      alt
-    </kbd>
-    +
-    <kbd class="min-h-[30px] inline-flex justify-center items-center py-1 px-1.5 bg-gray-200 font-mono text-sm text-gray-800 rounded-md">
-      a
-    </kbd>
-  </span>
+<div class="d-flex justify-content-end mb-3">
   <button href="" class="btn btn-primary" id="buttonAddModal" data-bs-toggle="modal" data-bs-target="#addModalBarang">Add Barang</button>
 </div>
 {% if messages %}
@@ -23,8 +14,8 @@
     {% endfor %}
 </ul>
 {% endif %}
-<div class="w-full overflow-x-auto">
-  <table class="tableBarang cell-border" style="width: 100%;">
+<div class="">
+  <table class="tableBarang table cell-border" style="width: 100%;">
    {% csrf_token %}
    <thead>
        <tr>
@@ -54,8 +45,8 @@
             <label for="nama_barangAdd" class="form-label">Nama Barang</label>
             <input type="text" class="form-control" id="nama_barangAdd">
           </div>
-          <label for="KategoriAdd">Kategori</label>
-          <select class="normalize mt-1" id="kategoriAdd" name="kategoriAdd" aria-label="Default select example">
+          <label for="KategoriAdd" class="form-label">Kategori</label>
+          <select class="normalize mb-3" id="kategoriAdd" name="kategoriAdd" aria-label="Default select example">
             <option selected value="">Open this select menu</option>
             {% for k in kategori %}
               <option value="{{k.pk}}">{{ k.kategori }}</option>
@@ -97,6 +88,9 @@
           <label for="kategoriEdit">Kategori</label>
           <select class="normalize mt-1 mb-3" id="kategoriEdit" name="kategoriEdit" aria-label="Default select example">
             <option selected value="">Open this select menu</option>
+            <option value="1">coba</option>
+            <option value="1">coba</option>
+            <option value="1">coba</option>
             {% for k in kategori %}
               <option value="{{k.pk}}">{{ k.kategori }}</option>
             {% endfor %}
@@ -114,7 +108,8 @@
       </div>
     </div>
   </div>
+
    {% endblock isi %}
    {% block js %}
-        <script src="{% static "js/tablebarang.js" %}?2382376"></script>
+        <script src="{% static "js/tablebarang.js" %}?84848949"></script>
     {% endblock js %}

@@ -3,25 +3,38 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css"
-      integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N"
-      crossorigin="anonymous"
-    />
     <title>Document</title>
+    <style>
+      table {
+        width: 100%;
+        border-collapse: collapse !important;
+      }
+    
+      th, td {
+        padding: 2px;
+        margin: 0 ;
+        border: 1px solid black !important;
+        line-height: 1;
+      }
+    
+      .format-text{
+        color: black;
+      }
+    </style>
   </head>
   <body>
     <p style="text-align: center"><strong>Laporan Pembelian</strong></p>
-    <table style="width: 100%" border="1">
-      <tbody>
+    <table style="width: 100%" class="table" border="1" cellspacing="0" cellpadding="0">
+      <thead>
         <tr>
-          <th align="center" class="">Tanggal Pembelian</th>
+          <th align="center" class="format-text">Tanggal Pembelian</th>
           <th>Nama Barang</th>
           <th align="center">Harga</th>
           <th align="center">Qty</th>
           <th align="center">Sub Total</th>
         </tr>
+      </thead>
+      <tbody>
         {% for dt in data %}
         <tr>
           <td align="center" style="height: 1.5em; padding-left: 0.5em">

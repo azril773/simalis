@@ -11,7 +11,7 @@
 </div>
 <div class="mb-10">
   <div class="w-full overflow-x-auto">
-    <table class="cell-border" id="pembelian" style="width: 100%;">
+    <table class="cell-border table" id="pembelian" style="width: 100%;">
         {% csrf_token %}
         <thead>
           <tr>
@@ -48,7 +48,7 @@
 </div>
 <div class="mb-10">
   <div class="w-full overflow-x-auto">
-    <table class="cell-border w-full" id="pengeluaran" style="width: 100%;">
+    <table class="cell-border w-full table" id="pengeluaran" style="width: 100%;">
         {% csrf_token %}
         <thead>
           <tr>
@@ -97,5 +97,5 @@
 
 {% endblock isi %}
 {% block js %}
-    <script src="{% static "js/general_report.js" %}?9283983"></script>
+    <script src="{% static "js/general_report.js" %}?5546646"></script>
 {% endblock js %}

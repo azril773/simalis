@@ -3,18 +3,29 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css"
-      integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N"
-      crossorigin="anonymous"
-    />
     <title>Document</title>
+    <style>
+      table {
+        width: 100%;
+        border-collapse: collapse !important;
+      }
+    
+      th, td {
+        padding: 2px;
+        margin: 0 ;
+        border: 1px solid black !important;
+        line-height: 1;
+      }
+    
+      .format-text{
+        color: black;
+      }
+    </style>
   </head>
   <body>
     <p style="text-align: center"><strong>Laporan Pengeluaran</strong></p>
     <table style="width: 100%" border="1">
-      <tbody>
+      <thead>
         <tr>
           <th align="center" class="">Tanggal Pengeluaran</th>
           <th align="center">Nama Barang</th>
@@ -22,6 +33,8 @@
           <th align="center">Counter Bagian</th>
           <th align="center">Nama Orang</th>
         </tr>
+      </thead>
+      <tbody>
         {% for dt in data %}
         <tr>
           <td style="height: 1.5em; padding-left: 0.5em">{{dt.tgl_keluar}}</td>
