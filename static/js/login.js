@@ -29,6 +29,9 @@ $("#tambahButton").on("click",function(e){
         headers:{"X-CSRFToken":token},
         success(e){
             $("#msgT").append(`<p class="alert alert-success">${e.message}</p>`)
+            $("#username").val("")
+            $("#email").val("")
+            $("#password").val("")
         },
         error(err){
             console.log(err)

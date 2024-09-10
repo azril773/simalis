@@ -1,16 +1,16 @@
 {% extends "../template/base.html" %} {% load static %} {% block isi %}
 <div class="w-full "></div>
-<div class="mb-3 w-full flex justify-start gap-2">
+<div class="mb-3 d-flex justify-content-start gap-2" style="width: 100%;">
   <div class="w-full">
       <label for="dateRangePembelian" class="mb-2 text-sm">Tanggal <b>Pembelian</b></label>
-      <input type="text" name="daterange" id="dateRangePembelian" class="form-control w-full" />
+      <input type="text" name="daterange" id="dateRangePembelian" class="form-control" style="width: 100%;" />
       </div>
   <div class="w-full">
-      <button id="searchPembelian" class="btn btn-primary mt-8">Cari</button>
+      <button id="searchPembelian" class="btn btn-primary" style="margin-top:30px">Cari</button>
   </div>
 </div>
 <div class="mb-10">
-  <div class="w-full overflow-x-auto">
+  <div class="overflow-x-auto" style="width: 100%;">
     <table class="cell-border table" id="pembelian" style="width: 100%;">
         {% csrf_token %}
         <thead>
@@ -33,21 +33,21 @@
       </table>
   </div>
 </div>
-<div class="flex justify-end">
+<div class="d-flex justify-content-end">
   <button class="btn btn-warning mb-5" id="printPdfPembelian">Print PDF</button>
 </div>
 <hr class="mb-10">
-<div class="mb-3 w-full flex justify-start gap-2">
-    <div class="w-full justify-between">
+<div class="mb-3 d-flex justify-content-start gap-2" style="width: 100%;">
+    <div class="justify-content-between" style="width: 100%;">
         <label for="dateRangePengeluaran" class="mb-2 text-sm -mt-5">Tanggal <b>Pengeluaran</b></label>
         <input type="text" name="daterange" id="dateRangePengeluaran" class="form-control w-full" />
         </div>
-    <div class="w-full">
-        <button id="searchPengeluaran" class="btn btn-primary mt-8">Cari</button>
+    <div class="" style="width: 100%;">
+        <button id="searchPengeluaran" class="btn btn-primary" style="margin-top:30px">Cari</button>
     </div>
 </div>
 <div class="mb-10">
-  <div class="w-full overflow-x-auto">
+  <div class="overflow-x-auto" style="width: 100%;">
     <table class="cell-border w-full table" id="pengeluaran" style="width: 100%;">
         {% csrf_token %}
         <thead>
@@ -68,27 +68,27 @@
       </table>
   </div>
 </div>
-<div class="flex justify-end">
+<div class="d-flex justify-content-end gap-3">
   <button class="btn btn-warning mb-5" id="printPdfPengeluaran">Print PDF</button>
   <button class="btn btn-warning mb-5 hidden" id="printPdfPengeluaranSpg">Print PDF SPG</button>
 </div>
 <hr class="mb-10">
 
-<div class="mb-3 w-full flex justify-start gap-2">
-    <div class="w-full flex justify-between gap-3">
-      <div class="w-full">
+<div class="mb-3 w-full d-flex justify-content-start gap-2">
+    <div class="d-flex justify-content-between gap-3" style="width: 100%;">
+      <div class="" style="width: 100%;">
         <label for="bulan" class="mb-2 text-sm -mt-5">Bulan</label>
         <select type="text" name="daterange" id="bulan">
           <option value="" selected>Pilih Bulan</option>
         </select>
       </div>
-      <div class="w-full">
+      <div class="" style="width: 100%;">
         <label for="tahun" class="mb-2 text-sm -mt-5">Tahun</label>
         <select type="text" name="daterange" id="tahun">
           <option value="" selected>Pilih Tahun</option>
         </select>
       </div>
-    <div class="mt-4 w-full">
+    <div class="mt-4 " style="width: 100%;">
       <button class="btn btn-warning mb-5" id="printPdfLaporan">Print PDF</button>
     </div>
   </div>
