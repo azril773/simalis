@@ -1029,13 +1029,13 @@ def printPengeluaran(r):
         template = get_template("formatLaporan/pengeluaranLaporan.html")
         html = template.render({"data":body})
         file = weasyprint.HTML(string=html)
-        css = weasyprint.CSS(filename=r'static/bootstrap-5.3.3-dist/css/bootstrap.min.css')
+        css = weasyprint.CSS(filename=r'static/bootstrap/css/bootstrap.min.css')
         fl = file.write_pdf(r"static/pdf/pengeluaran.pdf",css=[css])
         return HttpResponse(fl)
     else:
          with open(r"static/pdf/pengeluaran.pdf","rb") as fl:
             response = HttpResponse(fl.read(),"application/pdf")
-            response["Content-Disposition"] = "attachment;filename=pengeluaran"+str(datetime.now())+".pdf"
+            response["Content-Disposition"] = "filename=pengeluaran"+str(datetime.now())+".pdf"
             return response
     
 def printPengeluaranSpg(r):
@@ -1054,7 +1054,7 @@ def printPengeluaranSpg(r):
         template = get_template("formatLaporan/pengeluaranLaporanSpg.html")
         rdr = template.render({"data":body,"total":"{:,}".format(total)})
         file = weasyprint.HTML(string=rdr)
-        css = weasyprint.CSS(filename=r'static/bootstrap-5.3.3-dist/css/bootstrap.min.css')
+        css = weasyprint.CSS(filename=r'static/bootstrap/css/bootstrap.min.css')
         fl = file.write_pdf(r"static/pdf/pengeluaran.pdf",css=[css])
         return HttpResponse(file)
     else:
@@ -1079,7 +1079,7 @@ def printPembelian(r):
         template = get_template("formatLaporan/pembelianLaporan.html")
         rdr = template.render({"data":newData,"total":"{:,}".format(total)})
         file = weasyprint.HTML(string=rdr)
-        css = weasyprint.CSS(filename=r'static/bootstrap-5.3.3-dist/css/bootstrap.min.css')
+        css = weasyprint.CSS(filename=r'static/bootstrap/css/bootstrap.min.css')
         fl = file.write_pdf(r"static/pdf/pembelian.pdf",css=[css])
         return HttpResponse(fl)
     else:
@@ -1227,7 +1227,7 @@ def printPdfLaporan(r):
         # cfg = pdfkit.configuration(wkhtmltopdf=r'/usr/local/bin/wkhtmltopdf')
         # file = pdfkit.from_string(ctx,r'static/pdf/semuaPengeluaranCounter.pdf',configuration=cfg,options=options,css=r'static/css/laporan.css')
         file = weasyprint.HTML(string=ctx)
-        css = weasyprint.CSS(filename=r'static/bootstrap-5.3.3-dist/css/bootstrap.min.css')
+        css = weasyprint.CSS(filename=r'static/bootstrap/css/bootstrap.min.css')
         file.write_pdf(r'static/pdf/semuaPengeluaranCounter.pdf',stylesheets=[css])
         return JsonResponse({"data":"success"},status=200,safe=False)
     else:
