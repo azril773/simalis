@@ -20,8 +20,7 @@ sudo apt-get install -y libpangocairo-1.0-0
 ```
 
 
-### Langkah untuk membuat permissions
-Setup menggunakan database default
+### Langkah untuk membuat permissions (Setup menggunakan database default)
   1. Buat value baru didalam table content type
   2. Buat data baru dengan value "cabang" untuk kolom app_label dan untuk kolom model harus sama seperti pada bagian *=cabang=*
   3. Lalu buat permissions didalam table auth permissions
