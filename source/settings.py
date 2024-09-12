@@ -42,6 +42,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'atkapp.views.dashboard_middleware'
 ]
 
 
@@ -73,12 +74,53 @@ WSGI_APPLICATION = 'atk.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',  
-        'NAME': '',  
-        'USER':'',  
-        'PASSWORD':'',  
-        'HOST':'',  
+        'NAME': 'atk',  
+        'USER':'root',  
+        'PASSWORD':'123',  
+        'HOST':'localhost',  
         'PORT':'3306'
     },
+    'atk_pas':{
+        'ENGINE': 'django.db.backends.mysql',  
+        'NAME': 'atk_pas',  
+        'USER':'root',  
+        'PASSWORD':'123',  
+        'HOST':'localhost',  
+        'PORT':'3306'
+    },
+    'atk_pat':{
+        'ENGINE': 'django.db.backends.mysql',  
+        'NAME': 'atk_pat',  
+        'USER':'root',  
+        'PASSWORD':'123',  
+        'HOST':'localhost',  
+        'PORT':'3306'
+    },
+    'atk_crb':{
+        'ENGINE': 'django.db.backends.mysql',  
+        'NAME': 'atk_crb',  
+        'USER':'root',  
+        'PASSWORD':'123',  
+        'HOST':'localhost',  
+        'PORT':'3306'
+    },
+    'atk_chd':{
+        'ENGINE': 'django.db.backends.mysql',  
+        'NAME': 'atk_chd',  
+        'USER':'root',  
+        'PASSWORD':'123',  
+        'HOST':'localhost',  
+        'PORT':'3306'
+    },
+    'atk_grt':{
+        'ENGINE': 'django.db.backends.mysql',  
+        'NAME': 'atk_grt',  
+        'USER':'root',  
+        'PASSWORD':'123',  
+        'HOST':'localhost',  
+        'PORT':'3306'
+    },
+    
 }
 
 
