@@ -21,12 +21,12 @@ sudo apt-get install -y libpangocairo-1.0-0
 
 
 Langkah untuk membuat permissions
-1. Buat value baru didalam table content type
-2. Buat data baru dengan value "cabang" untuk kolom app_label dan untuk kolom model harus sama seperti pada bagian *=cabang=*
-3. Lalu buat permissions didalam table auth permissions
-4. Isi kolom name sesuai dengan yang kita inginkan 
-5. Lalu isi kolom content_type dengan id yang sesuai pada table content_type
-6. Kemudian untuk codename disamakan seperti pada bagian *=cabang=*
+  1. Buat value baru didalam table content type
+  2. Buat data baru dengan value "cabang" untuk kolom app_label dan untuk kolom model harus sama seperti pada bagian *=cabang=*
+  3. Lalu buat permissions didalam table auth permissions
+  4. Isi kolom name sesuai dengan yang kita inginkan 
+  5. Lalu isi kolom content_type dengan id yang sesuai pada table content_type
+  6. Kemudian untuk codename disamakan seperti pada bagian *=cabang=*
 
 
 ### =cabang=
