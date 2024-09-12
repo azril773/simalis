@@ -27,20 +27,16 @@ def middleware(r):
     except:
         messages.add_message(r,messages.ERROR,"User tidak ada")
         return redirect('/')
-    cabang = "cabang."+r.POST.get("cabang")
-    ps = user.has_perm(cabang)
-    if not models.Permission.objects.filter(codename=r.POST.get("cabang")).exists():
-        messages.add_message(r,messages.ERROR,"Terjadi kesalahan")
-        return redirect('/')
-    prs = models.Permission.objects.get(codename=r.POST.get("cabang"))
-    if ps:
-        os.environ["cabang"] = prs.name
-        os.environ["database"] = "atk_"+r.POST.get("cabang")
-        login(r,user)
-        return redirect("/atk/")
-    else:
-        messages.add_message(r,messages.ERROR,"Anda tidak memiliki akses kecabang ini")
-        return redirect('/')
+    # cabang = "cabang."+r.POST.get("cabang")
+    permissions = models.Permission.objects.filter(content_type__app_label="cabang")
+    for p in permissions:
+        if user.has_perm("cabang."+p.codename):
+            os.environ["cabang"] = p.name
+            os.environ["database"] = "atk_"+p.codename
+            login(r,user)
+            return redirect("/atk/")
+    messages.add_message(r,messages.ERROR,"Anda tidak memiliki akses")
+    return redirect('/')
         
 urlpatterns = [
     path('admin/', admin.site.urls),

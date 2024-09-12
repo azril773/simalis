@@ -66,7 +66,6 @@ def barang(r):
     for p in r.user.get_all_permissions():
         if re.search(r"cabang\..+",p,re.IGNORECASE):
             name = Permission.objects.get(codename=str(p).split(".")[1])
-            print(name.name)
             cabangs.append({"codename":p.split(".")[1],"nama":name.name})
     return render(r,"barang/barang.html",{'kategori':k,'cabang':cabang,'cabangs':cabangs,'tipe':tipe}) 
 
@@ -169,7 +168,6 @@ def pembelian(r):
     for p in r.user.get_all_permissions():
         if re.search(r"cabang\..+",p,re.IGNORECASE):
             name = Permission.objects.get(codename=str(p).split(".")[1])
-            print(name.name)
             cabangs.append({"codename":p.split(".")[1],"nama":name.name})
     return render(r,"pembelian/pembelian.html",{"data":b,'cabang':cabang,'cabangs':cabangs,'tipe':tipe}) 
 
@@ -225,7 +223,6 @@ def tambahPembelian(r):
         for p in r.user.get_all_permissions():
             if re.search(r"cabang\..+",p,re.IGNORECASE):
                 name = Permission.objects.get(codename=str(p).split(".")[1])
-                print(name.name)
                 cabangs.append({"codename":p.split(".")[1],"nama":name.name})
         return render(r,"barang/tambahbarang.html",{"data":k,'cabang':cabang,'cabangs':cabangs,'tipe':tipe}) 
     
@@ -391,7 +388,6 @@ def pengeluaran(r):
     for p in r.user.get_all_permissions():
         if re.search(r"cabang\..+",p,re.IGNORECASE):
             name = Permission.objects.get(codename=str(p).split(".")[1])
-            print(name.name)
             cabangs.append({"codename":p.split(".")[1],"nama":name.name})
     return render(r,"pengeluaran/pengeluaran.html",{"barang":barang,"person":p,"counter":c,'divisi':d,'cabang':cabang,'cabangs':cabangs,'tipe':tipe})  
 
@@ -454,7 +450,6 @@ def tambahPengeluaran(r):
         for p in r.user.get_all_permissions():
             if re.search(r"cabang\..+",p,re.IGNORECASE):
                 name = Permission.objects.get(codename=str(p).split(".")[1])
-                print(name.name)
                 cabangs.append({"codename":p.split(".")[1],"nama":name.name})
         return render(r,"barang/tambahbarang.html",{"data":k,'cabang':cabang,'cabangs':cabangs,'tipe':tipe}) 
     
@@ -554,7 +549,6 @@ def editPengeluaran(r):
         for p in r.user.get_all_permissions():
             if re.search(r"cabang\..+",p,re.IGNORECASE):
                 name = Permission.objects.get(codename=str(p).split(".")[1])
-                print(name.name)
                 cabangs.append({"codename":p.split(".")[1],"nama":name.name})
         return render(r,"barang/tambahbarang.html",{"data":k,'cabang':cabang,'cabangs':cabangs,'tipe':tipe}) 
     
@@ -577,7 +571,6 @@ def getPengeluaranById(r):
         for p in r.user.get_all_permissions():
             if re.search(r"cabang\..+",p,re.IGNORECASE):
                 name = Permission.objects.get(codename=str(p).split(".")[1])
-                print(name.name)
                 cabangs.append({"codename":p.split(".")[1],"nama":name.name})
         return render(r,"barang/tambahbarang.html",{"data":k,'cabang':cabang,'cabangs':cabangs,'tipe':tipe}) 
     
@@ -636,7 +629,6 @@ def getPersonById(r):
     for p in r.user.get_all_permissions():
         if re.search(r"cabang\..+",p,re.IGNORECASE):
             name = Permission.objects.get(codename=str(p).split(".")[1])
-            print(name.name)
             cabangs.append({"codename":p.split(".")[1],"nama":name.name})
     return render(r,"pengeluaranT/pengeluaranT.html",{"barang":brg,"person":person,"counter":counter,'cabang':cabang,'cabangs':cabangs})
 
@@ -649,7 +641,6 @@ def laporan(r):
     for p in r.user.get_all_permissions():
         if re.search(r"cabang\..+",p,re.IGNORECASE):
             name = Permission.objects.get(codename=str(p).split(".")[1])
-            print(name.name)
             cabangs.append({"codename":p.split(".")[1],"nama":name.name})
     return render(r,"laporan/laporan.html",{'cabang':cabang,'cabangs':cabangs,'tipe':tipe})
 
@@ -833,7 +824,6 @@ def pengeluaranT(r):
     for p in r.user.get_all_permissions():
         if re.search(r"cabang\..+",p,re.IGNORECASE):
             name = Permission.objects.get(codename=str(p).split(".")[1])
-            print(name.name)
             cabangs.append({"codename":p.split(".")[1],"nama":name.name})
     return render(r,"pengeluaranT/pengeluaranT.html",{"barang":brg,"person":person,"counter":counter,'cabang':cabang,'cabangs':cabangs})
 
@@ -1105,7 +1095,6 @@ def generalReport(r):
     for p in r.user.get_all_permissions():
         if re.search(r"cabang\..+",p,re.IGNORECASE):
             name = Permission.objects.get(codename=str(p).split(".")[1])
-            print(name.name)
             cabangs.append({"codename":p.split(".")[1],"nama":name.name})
     return render(r,"generalReport/general_report.html",{"barang":brg,"counter":ctr,'cabang':cabang,'cabangs':cabangs,'tipe':tipe})
 
@@ -1308,10 +1297,8 @@ def printPdfLaporan(r):
         data_pengeluaran = []
         brg = Master_barang.objects.using(os.environ.get("database")).all()
         obj = {}
-        # print(monthrange(int(tahun),int(bulan)))
         dr = datetime.strptime("01-"+bulan+"-"+tahun+" 00:00:00","%d-%m-%Y %H:%M:%S")
         sp = datetime.strptime(str(monthrange(int(tahun),int(bulan))[1])+"-"+bulan+"-"+tahun+" 23:59:59","%d-%m-%Y %H:%M:%S")
-        print(dr,sp)
         for brg in Master_barang.objects.using(os.environ.get("database")).values("id").all():
             datap = Pengeluaran.objects.using(os.environ.get("database")).filter(master_barang_id_id=brg["id"],tgl_keluar__range=[dr,sp])
             for d in datap:
@@ -1343,7 +1330,6 @@ def printPdfLaporan(r):
         # for o in obj:
         data_pengeluaran = []
         for k in obj.keys():
-            # print(k)
             try:
                 nama_brg = Master_barang.objects.using(os.environ.get("database")).values("barang").get(pk=k)
                 for o in obj[k]:
@@ -1390,7 +1376,6 @@ def kategori(r):
     for p in r.user.get_all_permissions():
         if re.search(r"cabang\..+",p,re.IGNORECASE):
             name = Permission.objects.get(codename=str(p).split(".")[1])
-            print(name.name)
             cabangs.append({"codename":p.split(".")[1],"nama":name.name})
     return render(r,"kategori/kategori.html",{'cabang':cabang,'cabangs':cabangs,'tipe':tipe})
 
@@ -1460,7 +1445,6 @@ def personal(r):
     for p in r.user.get_all_permissions():
         if re.search(r"cabang\..+",p,re.IGNORECASE):
             name = Permission.objects.get(codename=str(p).split(".")[1])
-            print(name.name)
             cabangs.append({"codename":p.split(".")[1],"nama":name.name})
     return render(r,"personal/personal.html",{
         "counter":counter,
@@ -1540,7 +1524,6 @@ def counter(r):
     for p in r.user.get_all_permissions():
         if re.search(r"cabang\..+",p,re.IGNORECASE):
             name = Permission.objects.get(codename=str(p).split(".")[1])
-            print(name.name)
             cabangs.append({"codename":p.split(".")[1],"nama":name.name})
     return render(r,"counter/counter.html",{'divisi':d,"cabang":cabang,'cabangs':cabangs,'tipe':tipe})
 
@@ -1617,7 +1600,6 @@ def divisi(r):
     for p in r.user.get_all_permissions():
         if re.search(r"cabang\..+",p,re.IGNORECASE):
             name = Permission.objects.get(codename=str(p).split(".")[1])
-            print(name.name)
             cabangs.append({"codename":p.split(".")[1],"nama":name.name})
     return render(r,"divisi/divisi.html",{'divisi':d,'cabang':cabang,'cabangs':cabangs,'tipe':tipe})
 
@@ -1689,7 +1671,6 @@ def login(r):
     for p in r.user.get_all_permissions():
         if re.search(r"cabang\..+",p,re.IGNORECASE):
             name = Permission.objects.get(codename=str(p).split(".")[1])
-            print(name.name)
             cabangs.append({"codename":p.split(".")[1],"nama":name.name})
     return render(r,'login/login.html',{"id":id,'cabang':cabang,'cabangs':cabangs,'tipe':tipe,"permissions":permission})
 
@@ -1720,7 +1701,6 @@ def tambahUser(r):
             get = User.objects.create_user(username=username,password=password)
         else:
             get = User.objects.create_user(username=username,email=email,password=password)
-        print(permissions)
         get.user_permissions.set(permissions)
         get.save() 
         return JsonResponse({'status':"ok","message":"berhasil menambahkan user"},status=200)
