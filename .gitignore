@@ -50,5 +50,4 @@ Thumbs.db
 
 atk/settings.py
 env
-static/pdf
 atkapp/migrations

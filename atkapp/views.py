@@ -5,7 +5,7 @@ from django.http import JsonResponse, HttpResponse,FileResponse
 import json
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Permission
 from datetime import datetime
 from django.utils import timezone
 from django.contrib import messages
@@ -16,9 +16,11 @@ from django.template import Context
 from django.core.files.base import ContentFile
 import os
 from django.http import StreamingHttpResponse
-from django.db import transaction,connection
+from django.db import transaction,connections
 import weasyprint
 import calendar
+import re
+from calendar import monthrange
 bulanArr = ['Januari','Februari','Maret',"April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"]
 
 @login_required
@@ -33,10 +35,10 @@ def dashboard(r):
 @login_required
 def getBarang(r):
     data = []
-    for b in Master_barang.objects.all():
+    for b in Master_barang.objects.using(os.environ.get("database")).using(os.environ.get("database")).all():
         obj = {}
-        k = Kategori_brg.objects.get(pk=b.kategori_id.pk)
-        d = Stok_brg.objects.filter(master_barang_id=b.pk).last()
+        k = Kategori_brg.objects.using(os.environ.get("database")).get(pk=b.kategori_id.pk)
+        d = Stok_brg.objects.using(os.environ.get("database")).filter(master_barang_id=b.pk).last()
         obj["barang"] = {}
         obj["barang"]["nama_barang"] = b.barang
         obj["barang"]["harga"] = b.harga
@@ -56,8 +58,17 @@ def getBarang(r):
 
 @login_required
 def barang(r):
-    k = Kategori_brg.objects.all()
-    return render(r,"barang/barang.html",{'kategori':k}) 
+    k = Kategori_brg.objects.using(os.environ.get("database")).all()
+    cabang = os.environ.get("cabang").split(" ")[-1]
+    tipe = os.environ.get("cabang").split(" ")[0:-1]
+    tipe = " ".join(tipe)
+    cabangs = []
+    for p in r.user.get_all_permissions():
+        if re.search(r"cabang\..+",p,re.IGNORECASE):
+            name = Permission.objects.get(codename=str(p).split(".")[1])
+            print(name.name)
+            cabangs.append({"codename":p.split(".")[1],"nama":name.name})
+    return render(r,"barang/barang.html",{'kategori':k,'cabang':cabang,'cabangs':cabangs,'tipe':tipe}) 
 
 @login_required
 def tambahBarang(r):
@@ -66,8 +77,8 @@ def tambahBarang(r):
             nama = r.POST.get("nama_barang")
             harga_jual = r.POST.get("harga_jual")
             kategori = r.POST.get("kategori")
-            k = Kategori_brg.objects.get(pk=kategori)
-            ceknama = Master_barang.objects.filter(barang=nama)
+            k = Kategori_brg.objects.using(os.environ.get("database")).get(pk=kategori)
+            ceknama = Master_barang.objects.using(os.environ.get("database")).filter(barang=nama)
             if ceknama:
                 return JsonResponse({"message":"nama barang sudah ada!"},status=400,safe=False)
             if k.status =="DC":
@@ -77,7 +88,7 @@ def tambahBarang(r):
             brg.harga = 0
             brg.harga_jual = harga_jual
             brg.kategori_id = k
-            brg.save()
+            brg.save(using=os.environ.get("database"))
             return JsonResponse({"message":"success create barang"},status=200,safe=False)
     else:
         return redirect("barang")
@@ -91,14 +102,14 @@ def editBarang(r):
         nama_barang = r.POST.get("nama_barang")
         harga_jual = r.POST.get("harga_jual")
         try:
-            k = Kategori_brg.objects.get(pk=kategori,status="AC")
+            k = Kategori_brg.objects.using(os.environ.get("database")).get(pk=kategori,status="AC")
         except:
             return JsonResponse({"message":"Kategori sudah tidak aktif!"},status=400,safe=False)
-        brg = Master_barang.objects.get(pk=id)
+        brg = Master_barang.objects.using(os.environ.get("database")).get(pk=id)
         brg.barang = nama_barang
         brg.harga_jual = harga_jual
         brg.kategori_id = k
-        brg.save()
+        brg.save(using=os.environ.get("database"))
         msg = get_messages(r)
         arr = []
         for message in msg:
@@ -116,7 +127,7 @@ def deleteBarang(r):
 def getBarangById(r):
     if r.method == "POST":
         id = r.POST.get("id")
-        barang = Master_barang.objects.get(pk=id)
+        barang = Master_barang.objects.using(os.environ.get("database")).get(pk=id)
         brg = serialize("json",[barang])
         brg = json.loads(brg)
         return JsonResponse({"data":brg[0]},status=200,safe=False)
@@ -129,14 +140,14 @@ def getBarangById(r):
 @login_required
 def getPembelian(r):
     data = []
-    for p in Pembelian.objects.all():
+    for p in Pembelian.objects.using(os.environ.get("database")).all():
         obj = {}
-        b = Master_barang.objects.get(pk=p.master_barang_id.pk)
-        k = Kategori_brg.objects.get(pk=b.kategori_id.pk)
+        b = Master_barang.objects.using(os.environ.get("database")).get(pk=p.master_barang_id.pk)
+        k = Kategori_brg.objects.using(os.environ.get("database")).get(pk=b.kategori_id.pk)
         obj["barang"] = {}
         obj["tgl_pembelian"] = p.tgl_beli
         obj["barang"]["nama_barang"] = b.barang
-        stok = Stok_brg.objects.filter(master_barang_id=b.pk).last()
+        stok = Stok_brg.objects.using(os.environ.get("database")).filter(master_barang_id=b.pk).last()
         obj["kategori"] = k.kategori
         obj["aksi"] = p.pk
         obj["harga"] = p.harga
@@ -150,8 +161,17 @@ def getPembelian(r):
 
 @login_required
 def pembelian(r):
-    b = Master_barang.objects.filter(kategori_id__status="AC")
-    return render(r,"pembelian/pembelian.html",{"data":b}) 
+    b = Master_barang.objects.using(os.environ.get("database")).filter(kategori_id__status="AC")
+    cabang = os.environ.get("cabang").split(" ")[-1]
+    tipe = os.environ.get("cabang").split(" ")[0:-1]
+    tipe = " ".join(tipe)
+    cabangs = []
+    for p in r.user.get_all_permissions():
+        if re.search(r"cabang\..+",p,re.IGNORECASE):
+            name = Permission.objects.get(codename=str(p).split(".")[1])
+            print(name.name)
+            cabangs.append({"codename":p.split(".")[1],"nama":name.name})
+    return render(r,"pembelian/pembelian.html",{"data":b,'cabang':cabang,'cabangs':cabangs,'tipe':tipe}) 
 
 @login_required
 def tambahPembelian(r):
@@ -160,7 +180,7 @@ def tambahPembelian(r):
         barang = r.POST.get("barang")
         harga = r.POST.get("harga")
         qty = r.POST.get("qty") 
-        brg = Master_barang.objects.get(pk=barang,kategori_id__status="AC")
+        brg = Master_barang.objects.using(os.environ.get("database")).get(pk=barang,kategori_id__status="AC")
         if not brg:
             return 
         # if validation
@@ -178,7 +198,7 @@ def tambahPembelian(r):
         pembelian.master_barang_id = brg
         pembelian.qty = qty
         pembelian.subTotal = subtotal
-        get = Stok_brg.objects.select_for_update().filter(master_barang_id=brg.pk).last()
+        get = Stok_brg.objects.using(os.environ.get("database")).select_for_update().filter(master_barang_id=brg.pk).last()
         s = Stok_brg()
         s.qty_terima = qty
         s.qty_keluar = 0
@@ -192,13 +212,22 @@ def tambahPembelian(r):
         s.tgl_transaksi = tgl_beli
         s.master_barang_id = brg
         brg.status = "AC"
-        pembelian.save()
-        s.save()
-        brg.save()
+        pembelian.save(using=os.environ.get("database"))
+        s.save(using=os.environ.get("database"))
+        brg.save(using=os.environ.get("database"))
         return JsonResponse({"message":"success create pembelian"},status=200,safe=False)
     else:
-        k = Kategori_brg.objects.filter(status="AC")
-        return render(r,"barang/tambahbarang.html",{"data":k}) 
+        k = Kategori_brg.objects.using(os.environ.get("database")).filter(status="AC")
+        cabang = os.environ.get("cabang").split(" ")[-1]
+        tipe = os.environ.get("cabang").split(" ")[0:-1]
+        tipe = " ".join(tipe)
+        cabangs = []
+        for p in r.user.get_all_permissions():
+            if re.search(r"cabang\..+",p,re.IGNORECASE):
+                name = Permission.objects.get(codename=str(p).split(".")[1])
+                print(name.name)
+                cabangs.append({"codename":p.split(".")[1],"nama":name.name})
+        return render(r,"barang/tambahbarang.html",{"data":k,'cabang':cabang,'cabangs':cabangs,'tipe':tipe}) 
     
 
 @login_required
@@ -211,23 +240,23 @@ def editPembelian(r):
         hargaJual = r.POST.get("hargaJual")
         qty = r.POST.get("qty")
         with transaction.atomic():
-            pembelian = Pembelian.objects.get(pk=id)
-            b = Master_barang.objects.get(pk=brg) #pulpen
+            pembelian = Pembelian.objects.using(os.environ.get("database")).get(pk=id)
+            b = Master_barang.objects.using(os.environ.get("database")).get(pk=brg) #pulpen
             # if validation
             b.harga = harga
             try:
-                barang = Master_barang.objects.get(pk=brg,kategori_id__status="AC") #pulpen
+                barang = Master_barang.objects.using(os.environ.get("database")).get(pk=brg,kategori_id__status="AC") #pulpen
             except:
                 return JsonResponse({"message":"barang sudah tidak aktif!"},status=400,safe=False)
         
             update = int(qty) - int(pembelian.qty) # -100
-            get = Stok_brg.objects.select_for_update().filter(master_barang_id=brg).last() #pulpen 100
+            get = Stok_brg.objects.using(os.environ.get("database")).select_for_update().filter(master_barang_id=brg).last() #pulpen 100
             if int(brg) != int(pembelian.master_barang_id.pk):
                 # return False
                 update = qty
                 qty_sebelum = pembelian.qty
-                stk = Stok_brg.objects.select_for_update().filter(master_barang_id=pembelian.master_barang_id).last()
-                brgSb = Master_barang.objects.get(pk=pembelian.master_barang_id.pk)
+                stk = Stok_brg.objects.using(os.environ.get("database")).select_for_update().filter(master_barang_id=pembelian.master_barang_id).last()
+                brgSb = Master_barang.objects.using(os.environ.get("database")).get(pk=pembelian.master_barang_id.pk)
                 newStok = Stok_brg()
                 newStok.tgl_transaksi = datetime.now()
                 newStok.qty_keluar = qty
@@ -246,8 +275,8 @@ def editPembelian(r):
                 newStok.kode = 4
                 newStok.person = r.user
                 newStok.master_barang_id = stk.master_barang_id
-                newStok.save()
-                brgSb.save()
+                newStok.save(using=os.environ.get("database"))
+                brgSb.save(using=os.environ.get("database"))
                 
 
             s = Stok_brg()
@@ -275,9 +304,9 @@ def editPembelian(r):
             pembelian.harga = harga
             pembelian.qty = qty
             pembelian.master_barang_id = barang
-            pembelian.save()
-            s.save()
-            b.save()
+            pembelian.save(using=os.environ.get("database"))
+            s.save(using=os.environ.get("database"))
+            b.save(using=os.environ.get("database"))
             return JsonResponse({"message":"sdsd"},status=200)
 
 @login_required
@@ -285,7 +314,7 @@ def getPembelianById(r):
     
     if r.method == "POST":
         id = r.POST.get("id")
-        p = Pembelian.objects.get(pk=id)
+        p = Pembelian.objects.using(os.environ.get("database")).get(pk=id)
         s = serialize("json",[p])
         s = json.loads(s)
         return JsonResponse({"data":s[0]},status=200,safe=False)
@@ -296,13 +325,13 @@ def getPembelianRange(r):
     end = r.POST.get("end")
     item = r.POST.get("item")
     if item:
-        pembelian = Pembelian.objects.filter(tgl_beli__range=[start,end],master_barang_id__barang__icontains=item)
+        pembelian = Pembelian.objects.using(os.environ.get("database")).filter(tgl_beli__range=[start,end],master_barang_id__barang__icontains=item)
     else:
-        pembelian = Pembelian.objects.filter(tgl_beli__range=[start,end])
+        pembelian = Pembelian.objects.using(os.environ.get("database")).filter(tgl_beli__range=[start,end])
     data = []
     for p in pembelian:
         obj = {}
-        barang  = Master_barang.objects.get(pk=p.master_barang_id.pk)
+        barang  = Master_barang.objects.using(os.environ.get("database")).get(pk=p.master_barang_id.pk)
         obj["tgl_beli"] = p.tgl_beli
         obj["harga"] = p.harga
         obj["qty"] = p.qty
@@ -321,19 +350,19 @@ def getPembelianRange(r):
 @login_required
 def getPengeluaran(r):
     data = []
-    for p in Pengeluaran.objects.all():
+    for p in Pengeluaran.objects.using(os.environ.get("database")).using(os.environ.get("database")).all():
         obj = {}
-        b = Master_barang.objects.get(pk=p.master_barang_id.pk)
-        k = Kategori_brg.objects.get(pk=b.kategori_id.pk)
-        c = Counter_bagian.objects.get(pk=p.counter_id.pk)
-        d = Divisi.objects.get(pk=p.divisi.pk)
+        b = Master_barang.objects.using(os.environ.get("database")).get(pk=p.master_barang_id.pk)
+        k = Kategori_brg.objects.using(os.environ.get("database")).get(pk=b.kategori_id.pk)
+        c = Counter_bagian.objects.using(os.environ.get("database")).get(pk=p.counter_id.pk)
+        d = Divisi.objects.using(os.environ.get("database")).get(pk=p.divisi.pk)
         person = None
         obj["barang"] = {}
         obj["person"] = None
         if p.personal_id:
-            person = Personal.objects.get(pk=p.personal_id.pk)
+            person = Personal.objects.using(os.environ.get("database")).get(pk=p.personal_id.pk)
             obj["person"] = person.nama
-        stok = Stok_brg.objects.filter(master_barang_id=b.pk).last()
+        stok = Stok_brg.objects.using(os.environ.get("database")).filter(master_barang_id=b.pk).last()
         obj["tgl_pengeluaran"] = p.tgl_keluar
         obj["harga_jual"] = p.harga_jual
         obj["barang"]["nama_barang"] = b.barang
@@ -351,12 +380,20 @@ def getPengeluaran(r):
 
 @login_required
 def pengeluaran(r):
-    barang = Master_barang.objects.filter(status="AC",kategori_id__status="AC")
-    p = Personal.objects.filter(status="AC")
-    c = Counter_bagian.objects.filter(status="AC")
-    d = Divisi.objects.filter(status="AC")
-
-    return render(r,"pengeluaran/pengeluaran.html",{"barang":barang,"person":p,"counter":c,'divisi':d}) 
+    barang = Master_barang.objects.using(os.environ.get("database")).filter(status="AC",kategori_id__status="AC")
+    p = Personal.objects.using(os.environ.get("database")).filter(status="AC")
+    c = Counter_bagian.objects.using(os.environ.get("database")).filter(status="AC")
+    d = Divisi.objects.using(os.environ.get("database")).filter(status="AC")
+    cabang = os.environ.get("cabang").split(" ")[-1]
+    tipe = os.environ.get("cabang").split(" ")[0:-1]
+    tipe = " ".join(tipe)
+    cabangs = []
+    for p in r.user.get_all_permissions():
+        if re.search(r"cabang\..+",p,re.IGNORECASE):
+            name = Permission.objects.get(codename=str(p).split(".")[1])
+            print(name.name)
+            cabangs.append({"codename":p.split(".")[1],"nama":name.name})
+    return render(r,"pengeluaran/pengeluaran.html",{"barang":barang,"person":p,"counter":c,'divisi':d,'cabang':cabang,'cabangs':cabangs,'tipe':tipe})  
 
 @login_required
 def tambahPengeluaran(r):
@@ -370,10 +407,10 @@ def tambahPengeluaran(r):
 
         # get model
         with transaction.atomic():
-            brg = Master_barang(pk=barang)
-            ctr = Counter_bagian(pk=counter)
-            prs = Personal(pk=person) 
-            stk = Stok_brg.objects.select_for_update().filter(master_barang_id=barang).last()
+            brg = Master_barang.objects.get(pk=barang)
+            ctr = Counter_bagian.objects.get(pk=counter)
+            prs = Personal.objects.get(pk=person) 
+            stk = Stok_brg.objects.using(os.environ.get("database")).select_for_update().filter(master_barang_id=barang).last()
             stok = Stok_brg()
 
             # update
@@ -393,7 +430,7 @@ def tambahPengeluaran(r):
 
             # cek if person is null
             if person != '':
-                prs = Personal(pk=person)
+                prs = Personal.objects.get(pk=person)
             # if validation
 
             # update
@@ -404,13 +441,22 @@ def tambahPengeluaran(r):
             pengeluaran.personal_id = prs
             pengeluaran.tgl_keluar = tgl_keluar
             pengeluaran.status = status
-            pengeluaran.save()
-            stok.save()
+            pengeluaran.save(using=os.environ.get("database"))
+            stok.save(using=os.environ.get("database"))
 
             return JsonResponse({"message":"success create pembelian"},status=200,safe=False)
     else:
-        k = Kategori_brg.objects.all()
-        return render(r,"barang/tambahbarang.html",{"data":k}) 
+        k = Kategori_brg.objects.using(os.environ.get("database")).all()
+        cabang = os.environ.get("cabang").split(" ")[-1]
+        tipe = os.environ.get("cabang").split(" ")[0:-1]
+        tipe = " ".join(tipe)
+        cabangs = []
+        for p in r.user.get_all_permissions():
+            if re.search(r"cabang\..+",p,re.IGNORECASE):
+                name = Permission.objects.get(codename=str(p).split(".")[1])
+                print(name.name)
+                cabangs.append({"codename":p.split(".")[1],"nama":name.name})
+        return render(r,"barang/tambahbarang.html",{"data":k,'cabang':cabang,'cabangs':cabangs,'tipe':tipe}) 
     
 
 @login_required
@@ -423,14 +469,17 @@ def editPengeluaran(r):
         person = r.POST.get("person") 
         qty = r.POST.get("qty")
         status = r.POST.get("status")
-        pengeluaran = Pengeluaran.objects.get(pk=id)
+        pengeluaran = Pengeluaran.objects.using(os.environ.get("database")).get(pk=id)
         try:
-            brg = Master_barang.objects.get(pk=barang,kategori_id__status="AC")
+            brg = Master_barang.objects.using(os.environ.get("database")).get(pk=barang,kategori_id__status="AC")
         except:
             return JsonResponse({"message":"Barang sudah tidak aktif!"},status=400,safe=False)
-        ctr = Counter_bagian.objects.get(pk=counter)
-        person = Personal(pk=person)
-        stk = Stok_brg.objects.filter(master_barang_id=brg).last()
+        ctr = Counter_bagian.objects.using(os.environ.get("database")).get(pk=counter)
+        try:
+            person = Personal.objects.using(os.environ.get("database")).get(pk=person)
+        except:
+            person = None
+        stk = Stok_brg.objects.using(os.environ.get("database")).filter(master_barang_id=brg).last()
         if not stk:
             return JsonResponse({"message":"Stok barang "+brg.barang+" tidak ada"},status=400)
         stok = Stok_brg()
@@ -438,7 +487,7 @@ def editPengeluaran(r):
         if int(pengeluaran.master_barang_id.pk) != int(barang):
             return False
             # updateStok = -abs(int(qty))
-            # stks = Stok_brg.objects.filter(master_barang_id=pengeluaran.master_barang_id).last()
+            # stks = Stok_brg.objects.using(os.environ.get("database")).filter(master_barang_id=pengeluaran.master_barang_id).last()
             # newStok = Stok_brg()
             # newStok.tgl_transaksi = datetime.now()
             # newStok.qty_keluar = 0
@@ -466,7 +515,7 @@ def editPengeluaran(r):
 
 
         if int(pengeluaran.master_barang_id.pk) != int(barang):
-            newStok.save()
+            newStok.save(using=os.environ.get("database"))
         
         if int(qty) != int(pengeluaran.qty) or int(pengeluaran.master_barang_id.pk) != int(barang):    
             stok.qty_keluar = qty
@@ -476,7 +525,7 @@ def editPengeluaran(r):
             stok.master_barang_id = brg
             stok.stok = int(stk.stok) + int(updateStok)
             stok.tgl_transaksi = datetime.now()
-            stok.save() 
+            stok.save(using=os.environ.get("database")) 
 
         if status == '1':
             if brg.harga_jual <= 0:
@@ -493,26 +542,44 @@ def editPengeluaran(r):
         pengeluaran.personal_id = person
         pengeluaran.status = status
         pengeluaran.harga_jual = pengeluaran.harga_jual
-        pengeluaran.save()
-        brg.save()
+        pengeluaran.save(using=os.environ.get("database"))
+        brg.save(using=os.environ.get("database"))
         return JsonResponse({"message":"sdsd"},status=200)
     else:
-        k = Kategori_brg.objects.all()
-        return render(r,"barang/tambahbarang.html",{"data":k}) 
+        k = Kategori_brg.objects.using(os.environ.get("database")).all()
+        cabang = os.environ.get("cabang").split(" ")[-1]
+        tipe = os.environ.get("cabang").split(" ")[0:-1]
+        tipe = " ".join(tipe)
+        cabangs = []
+        for p in r.user.get_all_permissions():
+            if re.search(r"cabang\..+",p,re.IGNORECASE):
+                name = Permission.objects.get(codename=str(p).split(".")[1])
+                print(name.name)
+                cabangs.append({"codename":p.split(".")[1],"nama":name.name})
+        return render(r,"barang/tambahbarang.html",{"data":k,'cabang':cabang,'cabangs':cabangs,'tipe':tipe}) 
     
 @login_required
 def getPengeluaranById(r):
     
     if r.method == "POST":
         id = r.POST.get("id")
-        p = Pengeluaran.objects.get(pk=id)
-        brg = Master_barang.objects.get(pk=p.master_barang_id.pk)
+        p = Pengeluaran.objects.using(os.environ.get("database")).get(pk=id)
+        brg = Master_barang.objects.using(os.environ.get("database")).get(pk=p.master_barang_id.pk)
         s = serialize("json",[p,brg])
         s = json.loads(s)
         return JsonResponse({"data":s[0],"barang":s[1]},status=200,safe=False)
     else:
-        k = Kategori_brg.objects.all()
-        return render(r,"barang/tambahbarang.html",{"data":k}) 
+        k = Kategori_brg.objects.using(os.environ.get("database")).all()
+        cabang = os.environ.get("cabang").split(" ")[-1]
+        tipe = os.environ.get("cabang").split(" ")[0:-1]
+        tipe = " ".join(tipe)
+        cabangs = []
+        for p in r.user.get_all_permissions():
+            if re.search(r"cabang\..+",p,re.IGNORECASE):
+                name = Permission.objects.get(codename=str(p).split(".")[1])
+                print(name.name)
+                cabangs.append({"codename":p.split(".")[1],"nama":name.name})
+        return render(r,"barang/tambahbarang.html",{"data":k,'cabang':cabang,'cabangs':cabangs,'tipe':tipe}) 
     
 @login_required
 def getPengeluaranRange(r):
@@ -524,28 +591,28 @@ def getPengeluaranRange(r):
         if spgAll:
             # printA(spgAll)
             if spgAll == "all":
-                pengeluaran = Pengeluaran.objects.filter(~Q(counter_id__counter_bagian__iregex=r"spg|spg"),tgl_keluar__range=[start,end],master_barang_id__barang__icontains=item)
+                pengeluaran = Pengeluaran.objects.using(os.environ.get("database")).filter(~Q(counter_id__counter_bagian__iregex=r"spg|spg"),tgl_keluar__range=[start,end],master_barang_id__barang__icontains=item)
             else:
-                pengeluaran = Pengeluaran.objects.filter(tgl_keluar__range=[start,end],master_barang_id__barang__icontains=item,counter_id__id=spgAll)
+                pengeluaran = Pengeluaran.objects.using(os.environ.get("database")).filter(tgl_keluar__range=[start,end],master_barang_id__barang__icontains=item,counter_id__id=spgAll)
         else:
-            pengeluaran = Pengeluaran.objects.filter(tgl_keluar__range=[start,end],master_barang_id__barang__icontains=item)
+            pengeluaran = Pengeluaran.objects.using(os.environ.get("database")).filter(tgl_keluar__range=[start,end],master_barang_id__barang__icontains=item)
     else:
         if spgAll:
             if spgAll == "all":
-                pengeluaran = Pengeluaran.objects.filter(~Q(counter_id__counter_bagian__iregex=r"spg|spg"),tgl_keluar__range=[start,end])
+                pengeluaran = Pengeluaran.objects.using(os.environ.get("database")).filter(~Q(counter_id__counter_bagian__iregex=r"spg|spg"),tgl_keluar__range=[start,end])
             else:
-                pengeluaran = Pengeluaran.objects.filter(tgl_keluar__range=[start,end],counter_id__id=spgAll)
+                pengeluaran = Pengeluaran.objects.using(os.environ.get("database")).filter(tgl_keluar__range=[start,end],counter_id__id=spgAll)
         else:
-            pengeluaran = Pengeluaran.objects.filter(tgl_keluar__range=[start,end])
+            pengeluaran = Pengeluaran.objects.using(os.environ.get("database")).filter(tgl_keluar__range=[start,end])
     data = []
     for p in pengeluaran:
         obj = {}
-        barang  = Master_barang.objects.get(pk=p.master_barang_id.pk)
-        counter  = Counter_bagian.objects.get(pk=p.counter_id.pk)
+        barang  = Master_barang.objects.using(os.environ.get("database")).get(pk=p.master_barang_id.pk)
+        counter  = Counter_bagian.objects.using(os.environ.get("database")).get(pk=p.counter_id.pk)
         if not p.personal_id:
             obj["nama_person"] = None
         else:
-            personal  = Personal.objects.get(pk=p.personal_id.pk)
+            personal  = Personal.objects.using(os.environ.get("database")).get(pk=p.personal_id.pk)
             obj["nama_person"] = personal.nama
 
         obj["barang"] = barang.barang
@@ -561,26 +628,37 @@ def getPengeluaranRange(r):
     
 @login_required
 def getPersonById(r):
-    if r.method == 'POST':
-        id = r.POST.get("id")
-        p = Personal.objects.get(pk=id)
-        c = Counter_bagian.objects.get(pk=p.counter_bagian_id.pk)
-        s = serialize("json",[p,c])
-        s = json.loads(s)
-        return JsonResponse({"data":s},status=200,safe=False)
-    else:
-        return redirect(r,"pengeluaran")
+    brg = Master_barang.objects.using(os.environ.get("database")).all()
+    person = Personal.objects.using(os.environ.get("database")).all()
+    counter = Counter_bagian.objects.using(os.environ.get("database")).all()
+    cabang = os.environ.get("cabang")
+    cabangs = []
+    for p in r.user.get_all_permissions():
+        if re.search(r"cabang\..+",p,re.IGNORECASE):
+            name = Permission.objects.get(codename=str(p).split(".")[1])
+            print(name.name)
+            cabangs.append({"codename":p.split(".")[1],"nama":name.name})
+    return render(r,"pengeluaranT/pengeluaranT.html",{"barang":brg,"person":person,"counter":counter,'cabang':cabang,'cabangs':cabangs})
 
 @login_required
 def laporan(r):
-    return render(r,"laporan/laporan.html")
+    cabang = os.environ.get("cabang").split(" ")[-1]
+    tipe = os.environ.get("cabang").split(" ")[0:-1]
+    tipe = " ".join(tipe)
+    cabangs = []
+    for p in r.user.get_all_permissions():
+        if re.search(r"cabang\..+",p,re.IGNORECASE):
+            name = Permission.objects.get(codename=str(p).split(".")[1])
+            print(name.name)
+            cabangs.append({"codename":p.split(".")[1],"nama":name.name})
+    return render(r,"laporan/laporan.html",{'cabang':cabang,'cabangs':cabangs,'tipe':tipe})
 
 @login_required
 def getLaporan(r):
-    l = Stok_brg.objects.all()
+    l = Stok_brg.objects.using(os.environ.get("database")).all()
     data = []
     for lp in l:
-        brg = Master_barang.objects.get(pk=lp.master_barang_id.pk)
+        brg = Master_barang.objects.using(os.environ.get("database")).get(pk=lp.master_barang_id.pk)
         obj = {}
         seri = serialize("json",[lp,brg])
         seri = json.loads(seri)
@@ -594,11 +672,11 @@ def rangeHarian(r):
     if r.headers["X-Requested-With"] == "XMLHttpRequest":
         rangeHarian = r.POST.get("rangeHarian")
         date = datetime.strptime(rangeHarian,'%Y-%m-%d')
-        data = Stok_brg.objects.raw("SELECT * FROM atkapp_stok_brg WHERE DAY(tgl_transaksi) = %s AND MONTH(tgl_transaksi) = %s AND YEAR(tgl_transaksi) = %s",[date.day,date.month,date.year])
+        data = Stok_brg.objects.using(os.environ.get("database")).raw("SELECT * FROM atkapp_stok_brg WHERE DAY(tgl_transaksi) = %s AND MONTH(tgl_transaksi) = %s AND YEAR(tgl_transaksi) = %s",[date.day,date.month,date.year])
         result = []
         for d in data:
             try:
-                brg = Master_barang.objects.filter(pk=d.master_barang_id.pk).last()
+                brg = Master_barang.objects.using(os.environ.get("database")).filter(pk=d.master_barang_id.pk).last()
             except:
                 return JsonResponse({"data":[]},safe=False,status=200)
             
@@ -625,10 +703,10 @@ def rangeHarian(r):
 
 @login_required
 def getTPembelian(r):
-    tP = Temporary_pembelian.objects.all()
+    tP = Temporary_pembelian.objects.using(os.environ.get("database")).all()
     data = []
     for p in tP:
-        brg = Master_barang.objects.get(pk=p.master_barang_id.pk)
+        brg = Master_barang.objects.using(os.environ.get("database")).get(pk=p.master_barang_id.pk)
         seri = serialize("json",[p,brg])
         seri = json.loads(seri)
         obj = {}
@@ -647,7 +725,7 @@ def tambahTPembelian(r):
         harga = r.POST.get("harga")
         qty = r.POST.get("qty")
         try:
-            barang = Master_barang.objects.get(pk=brg,kategori_id__status="AC")
+            barang = Master_barang.objects.using(os.environ.get("database")).get(pk=brg,kategori_id__status="AC")
         except:
             return JsonResponse({"message":"kategori barang sudah tidak aktif!"},status=400,safe=False)
         tp = Temporary_pembelian()
@@ -657,7 +735,7 @@ def tambahTPembelian(r):
         tp.qty = qty
         tp.subTotal = int(qty) * int(harga)
 
-        tp.save()
+        tp.save(using=os.environ.get("database"))
         return JsonResponse({"message":"success create temporary pembelian!"},status=200,safe=False)
     else:
         return JsonResponse({"message":"Form harus diisi!"},status=400,safe=False)
@@ -670,9 +748,9 @@ def editTPembelian(r):
         barang = r.POST.get("barang")
         harga = r.POST.get("harga")
         qty = r.POST.get("qty")
-        tp = Temporary_pembelian.objects.get(pk=id)
+        tp = Temporary_pembelian.objects.using(os.environ.get("database")).get(pk=id)
         try:
-            brg = Master_barang.objects.get(pk=barang,kategori_id__status="AC")
+            brg = Master_barang.objects.using(os.environ.get("database")).get(pk=barang,kategori_id__status="AC")
         except:
             return JsonResponse({"message":"barang sudah tidak aktif!"},status=400,safe=False)
         
@@ -681,13 +759,13 @@ def editTPembelian(r):
         tp.subTotal = int(harga) * int(qty)
         tp.qty = qty
         tp.master_barang_id = brg
-        tp.save()
+        tp.save(using=os.environ.get("database"))
         return JsonResponse({"message":"success edit temporary pembelian"},safe=False,status=200)
 
 @login_required
 def getTPembelianById(r):
     id = r.POST.get("id")
-    tp = Temporary_pembelian.objects.get(pk=id)
+    tp = Temporary_pembelian.objects.using(os.environ.get("database")).get(pk=id)
     seri = serialize("json",[tp])
     seri = json.loads(seri)
     return JsonResponse({"data":seri[0]},status=200,safe=False)
@@ -696,15 +774,15 @@ def getTPembelianById(r):
 def tambahPostPembelian(r):
     id = r.POST.getlist("id[]")
     for i in id:
-        tp = Temporary_pembelian.objects.get(pk=i)
+        tp = Temporary_pembelian.objects.using(os.environ.get("database")).get(pk=i)
         try:
-            brg = Master_barang.objects.get(pk=tp.master_barang_id.pk,kategori_id__status="AC")
+            brg = Master_barang.objects.using(os.environ.get("database")).get(pk=tp.master_barang_id.pk,kategori_id__status="AC")
         except:
             messages.add_message(r,messages.ERROR," Kategori Barang "+tp.master_barang_id.barang+" sudah tidak aktif!")
             continue
 
         s = Stok_brg()
-        if Stok_brg.objects.filter(master_barang_id__id=brg.pk).exists():
+        if Stok_brg.objects.using(os.environ.get("database")).filter(master_barang_id__id=brg.pk).exists():
             s.kode = 1
         else:
             s.kode = 5
@@ -717,7 +795,7 @@ def tambahPostPembelian(r):
         p.subTotal = tp.subTotal
         p.qty = tp.qty
         p.master_barang_id = brg
-        get = Stok_brg.objects.filter(master_barang_id=brg.pk).last()
+        get = Stok_brg.objects.using(os.environ.get("database")).filter(master_barang_id=brg.pk).last()
         s.qty_terima = tp.qty
         s.qty_keluar = 0
 
@@ -731,10 +809,10 @@ def tambahPostPembelian(r):
         s.person = r.user
         s.tgl_transaksi = tp.tgl_beli
         s.master_barang_id = brg
-        s.save()
-        p.save()
-        brg.save()
-        tp.delete()
+        s.save(using=os.environ.get("database"))
+        p.save(using=os.environ.get("database"))
+        brg.save(using=os.environ.get("database"))
+        tp.delete(using=os.environ.get("database"))
     msg = get_messages(r)
     arr = []
     for message in msg:
@@ -747,24 +825,31 @@ def tambahPostPembelian(r):
 
 @login_required
 def pengeluaranT(r):
-    brg = Master_barang.objects.all()
-    person = Personal.objects.all()
-    counter = Counter_bagian.objects.all()
-    return render(r,"pengeluaranT/pengeluaranT.html",{"barang":brg,"person":person,"counter":counter})
+    brg = Master_barang.objects.using(os.environ.get("database")).all()
+    person = Personal.objects.using(os.environ.get("database")).all()
+    counter = Counter_bagian.objects.using(os.environ.get("database")).all()
+    cabang = os.environ.get("cabang")
+    cabangs = []
+    for p in r.user.get_all_permissions():
+        if re.search(r"cabang\..+",p,re.IGNORECASE):
+            name = Permission.objects.get(codename=str(p).split(".")[1])
+            print(name.name)
+            cabangs.append({"codename":p.split(".")[1],"nama":name.name})
+    return render(r,"pengeluaranT/pengeluaranT.html",{"barang":brg,"person":person,"counter":counter,'cabang':cabang,'cabangs':cabangs})
 
 @login_required
 def getTPengeluaran(r):
-    tP = Temporary_pengeluaran.objects.all()
+    tP = Temporary_pengeluaran.objects.using(os.environ.get("database")).all()
     data = []
     for p in tP: 
-        brg = Master_barang.objects.get(pk=p.master_barang_id.pk)
-        ctr = Counter_bagian.objects.get(pk=p.counter_id.pk)
-        dvs = Divisi.objects.get(pk=p.counter_id.divisi.pk)
+        brg = Master_barang.objects.using(os.environ.get("database")).get(pk=p.master_barang_id.pk)
+        ctr = Counter_bagian.objects.using(os.environ.get("database")).get(pk=p.counter_id.pk)
+        dvs = Divisi.objects.using(os.environ.get("database")).get(pk=p.counter_id.divisi.pk)
         prs = None
         seri = None
         obj = {}
         if p.personal_id:
-            prs = Personal.objects.get(pk=p.personal_id.pk)
+            prs = Personal.objects.using(os.environ.get("database")).get(pk=p.personal_id.pk)
             seri = serialize("json",[p,brg,ctr,dvs,prs])
             seri = json.loads(seri)
             obj["person"] = seri[4]
@@ -792,11 +877,11 @@ def tambahTPengeluaran(r):
         status = r.POST.get("status")
         tp = Temporary_pengeluaran()
         try:
-            barang = Master_barang.objects.get(pk=brg,kategori_id__status="AC")
+            barang = Master_barang.objects.using(os.environ.get("database")).get(pk=brg,kategori_id__status="AC")
         except:
             return JsonResponse({"message":"Barang sudah tidak aktif!"},status=400,safe=False)
         prs = None
-        stk = Stok_brg.objects.filter(master_barang_id=barang.pk).last()
+        stk = Stok_brg.objects.using(os.environ.get("database")).filter(master_barang_id=barang.pk).last()
         if not stk:
             return JsonResponse({"message":"Stok barang tidak ada!"},status=400,safe=False)
         elif int(stk.stok) == 0:
@@ -805,13 +890,13 @@ def tambahTPengeluaran(r):
             return JsonResponse({"message":"Stok barang tidak cukup!"},status=400,safe=False)
         if person != "":
             try:
-                prs = Personal.objects.get(pk=person,status="AC")
+                prs = Personal.objects.using(os.environ.get("database")).get(pk=person,status="AC")
             except:
                 return JsonResponse({"message":"Person sudah tidak aktif!"},status=400,safe=False)
         tp.personal_id = prs
         try:
-            c = Counter_bagian.objects.get(pk=counter,status="AC")
-            d = Divisi.objects.get(pk=c.divisi.pk,status="AC")
+            c = Counter_bagian.objects.using(os.environ.get("database")).get(pk=counter,status="AC")
+            d = Divisi.objects.using(os.environ.get("database")).get(pk=c.divisi.pk,status="AC")
         except:
             return JsonResponse({"message":"Counter atau divisi sudah tidak aktif!"},status=400,safe=False)
 
@@ -829,7 +914,7 @@ def tambahTPengeluaran(r):
             tp.harga_jual = 0
         else:
             tp.harga_jual = barang.harga_jual
-        tp.save()
+        tp.save(using=os.environ.get("database"))
         return JsonResponse({"message":"success create temporary Pengeluaran!"},status=200,safe=False)
     else:
         return JsonResponse({"message":"Form harus diisi!"},status=400,safe=False)
@@ -844,17 +929,17 @@ def editTPengeluaran(r):
         person = r.POST.get("person") 
         status = r.POST.get("status") 
         qty = r.POST.get("qty")
-        tp = Temporary_pengeluaran.objects.get(pk=id)
+        tp = Temporary_pengeluaran.objects.using(os.environ.get("database")).get(pk=id)
         try:
-            brg = Master_barang.objects.get(pk=barang,kategori_id__status="AC")
+            brg = Master_barang.objects.using(os.environ.get("database")).get(pk=barang,kategori_id__status="AC")
         except:
             return JsonResponse({"message":"Barang sudah tidak aktif!"},status=400,safe=False)
         try:
-            ctr = Counter_bagian.objects.get(pk=counter,status="AC")
+            ctr = Counter_bagian.objects.using(os.environ.get("database")).get(pk=counter,status="AC")
         except:
             return JsonResponse({"message":"Counter sudah tidak aktif!"},status=400,safe=False)
         prs = None
-        stk = Stok_brg.objects.filter(master_barang_id=brg.pk).last()
+        stk = Stok_brg.objects.using(os.environ.get("database")).filter(master_barang_id=brg.pk).last()
         if not stk:
             return JsonResponse({"message":"Stok barang tidak ada!"},status=400,safe=False)
         elif int(stk.stok) == 0:
@@ -863,7 +948,7 @@ def editTPengeluaran(r):
             return JsonResponse({"message":"Stok barang tidak cukup!"},status=400,safe=False)
         if person != "":
             try:
-                prs = Personal.objects.get(pk=person,status="AC")
+                prs = Personal.objects.using(os.environ.get("database")).get(pk=person,status="AC")
             except:
                 return JsonResponse({"message":"Person sudah tidak aktif!"},status=400,safe=False)
             
@@ -882,7 +967,7 @@ def editTPengeluaran(r):
             tp.harga_jual = 0
         else:
             tp.harga_jual = brg.harga_jual
-        tp.save()
+        tp.save(using=os.environ.get("database"))
         return JsonResponse({"message":"success edit temporary Pengeluaran"},safe=False,status=200)
 
 @login_required
@@ -898,7 +983,7 @@ def deleteTPembelian(r):
     if r.POST.get("id"):
         id = r.POST.get("id")
         tp = get_object_or_404(Temporary_pembelian,pk=id)
-        tp.delete()
+        tp.delete(using=os.environ.get("database"))
         return JsonResponse({"message":"success delete temporary Pembelian"},safe=False,status=200)
 
 
@@ -906,7 +991,7 @@ def deleteTPembelian(r):
 @login_required
 def getTPengeluaranById(r):
     id = r.POST.get("id")
-    tp = Temporary_pengeluaran.objects.get(pk=id)
+    tp = Temporary_pengeluaran.objects.using(os.environ.get("database")).get(pk=id)
     seri = serialize("json",[tp])
     seri = json.loads(seri)
     return JsonResponse({"data":seri[0]},status=200,safe=False)
@@ -916,16 +1001,16 @@ def tambahPostPengeluaran(r):
     id = r.POST.getlist("id[]")
     msg = []
     for i in id:
-        tp = Temporary_pengeluaran.objects.get(pk=i)
+        tp = Temporary_pengeluaran.objects.using(os.environ.get("database")).get(pk=i)
         try:
-            brg = Master_barang.objects.get(pk=tp.master_barang_id.pk,kategori_id__status="AC")
+            brg = Master_barang.objects.using(os.environ.get("database")).get(pk=tp.master_barang_id.pk,kategori_id__status="AC")
             if brg.status == "DC":
                 msg.append("Barang sudah tidak aktif!")
                 continue
         except:
             msg.append("Kategori sudah tidak aktif!")
             continue
-        stk = Stok_brg.objects.filter(master_barang_id=brg.pk).last()
+        stk = Stok_brg.objects.using(os.environ.get("database")).filter(master_barang_id=brg.pk).last()
         if not stk:
             msg.append(f"Stok tidak ada untuk <b>{brg.barang}</b>!")
             continue
@@ -946,13 +1031,13 @@ def tambahPostPengeluaran(r):
             prs = None
         else:
             try:
-                prs = Personal.objects.get(pk=tp.personal_id.pk,status="AC")
+                prs = Personal.objects.using(os.environ.get("database")).get(pk=tp.personal_id.pk,status="AC")
             except:
                 msg.append("Person sudah tidak aktif!")
                 continue
 
         try:
-            ctr = Counter_bagian.objects.get(pk=tp.counter_id.pk,status="AC")
+            ctr = Counter_bagian.objects.using(os.environ.get("database")).get(pk=tp.counter_id.pk,status="AC")
         except:
             msg.append("Counter sudah tidak aktif!")
             continue
@@ -965,7 +1050,7 @@ def tambahPostPengeluaran(r):
             divisi_id=tp.counter_id.divisi.pk,
             status=tp.status,
             harga_jual=tp.harga_jual
-        ).save()
+        ).save(using=os.environ.get("database"))
 
         Stok_brg(
             kode=2,
@@ -975,10 +1060,10 @@ def tambahPostPengeluaran(r):
             master_barang_id=brg,
             stok=updateStok,
             qty_terima=0,
-        ).save()
+        ).save(using=os.environ.get("database"))
 
 
-        brg.save()
+        brg.save(using=os.environ.get("database"))
         tp.delete()
     if len(msg) != 0:
         return JsonResponse({"message":msg},status=400)
@@ -988,7 +1073,7 @@ def tambahPostPengeluaran(r):
 @login_required
 def generalReport(r):
     # stok = []
-    # s = Stok_brg.objects.all() 
+    # s = Stok_brg.objects.using(os.environ.get("database")).all() 
     # for stk in s:
     #     obj = {}
     #     obj["stok"] = stk
@@ -998,24 +1083,33 @@ def generalReport(r):
     # pembe = []
     # for pem in pembelian:
     #     obj = {}
-    #     brg = Master_barang.objects.get(pk=pem.master_barang_id.pk)
+    #     brg = Master_barang.objects.using(os.environ.get("database")).get(pk=pem.master_barang_id.pk)
     #     obj["pembelian"] = stk
     #     obj["barang"] = brg
     #     pembe.append(obj)
-    # pengeluaran = Pengeluaran.objects.all()
+    # pengeluaran = Pengeluaran.objects.using(os.environ.get("database")).all()
     # penge = []
     # for pen in pengeluaran:
     #     obj = {}
-    #     brg = Master_barang.objects.get(pk=pen.master_barang_id.pk)
+    #     brg = Master_barang.objects.using(os.environ.get("database")).get(pk=pen.master_barang_id.pk)
     #     obj["pengeluaran"] = stk
     #     obj["barang"] = brg
     #     penge.append(obj) 
         
-    brg = Master_barang.objects.all()
-    ctr = Counter_bagian.objects.all()
-    return render(r,"generalReport/general_report.html",{"barang":brg,"counter":ctr})
+    brg = Master_barang.objects.using(os.environ.get("database")).all()
+    ctr = Counter_bagian.objects.using(os.environ.get("database")).all()
+    cabang = os.environ.get("cabang").split(" ")[-1]
+    tipe = os.environ.get("cabang").split(" ")[0:-1]
+    tipe = " ".join(tipe)
+    cabangs = []
+    for p in r.user.get_all_permissions():
+        if re.search(r"cabang\..+",p,re.IGNORECASE):
+            name = Permission.objects.get(codename=str(p).split(".")[1])
+            print(name.name)
+            cabangs.append({"codename":p.split(".")[1],"nama":name.name})
+    return render(r,"generalReport/general_report.html",{"barang":brg,"counter":ctr,'cabang':cabang,'cabangs':cabangs,'tipe':tipe})
 
-# def coba(r):
+    # def coba(r):
     # template = get_template("pembelianLaporan.html")
     # output_text = template.render(ctx)
     # config = pdfkit.configuration(wkhtmltopdf=r"C:\wkhtmltopdf\bin\wkhtmltopdf.exe")
@@ -1105,10 +1199,10 @@ def printPdfLaporan(r):
         data = []
         pembelian = []
         totalPembelian = 0
-        crs = connection.cursor()
+        crs = connections[os.environ.get("database")].cursor()
         crs.execute("WITH p AS(SELECT atkapp_pembelian.subTotal,atkapp_master_barang.kategori_id_id FROM atkapp_pembelian JOIN atkapp_master_barang ON atkapp_master_barang.id = atkapp_pembelian.master_barang_id_id WHERE MONTH(atkapp_pembelian.tgl_beli) = %s AND YEAR(atkapp_pembelian.tgl_beli) = %s ) SELECT SUM(subTotal), kategori_id_id FROM p GROUP BY kategori_id_id",[bulan,tahun])
         for p in crs.fetchall():
-            kategori = Kategori_brg.objects.filter(pk=p[1])
+            kategori = Kategori_brg.objects.using(os.environ.get("database")).filter(pk=p[1])
             totalPembelian += p[0]
             obj = {
                 'kategori':kategori[0].kategori,
@@ -1118,10 +1212,10 @@ def printPdfLaporan(r):
         totalDivisi = 0
         totalDivisiNon = 0
         totalCounter = 0
-        for d in Divisi.objects.all():
+        for d in Divisi.objects.using(os.environ.get("database")).all():
             bydvs = []
             bycounter = [] 
-            pengeluaran = Pengeluaran.objects.raw('SELECT * FROM atkapp_pengeluaran WHERE MONTH(tgl_keluar) = %s AND YEAR(tgl_keluar) = %s AND divisi_id=%s',[bulan,tahun,d.pk])
+            pengeluaran = Pengeluaran.objects.using(os.environ.get("database")).raw('SELECT * FROM atkapp_pengeluaran WHERE MONTH(tgl_keluar) = %s AND YEAR(tgl_keluar) = %s AND divisi_id=%s',[bulan,tahun,d.pk])
             byr = 0
             faktur = 0
             for p in pengeluaran:
@@ -1158,12 +1252,12 @@ def printPdfLaporan(r):
                 'divisi':d.divisi,
                 "counter":[]
             }
-            for c in Counter_bagian.objects.filter(divisi_id=d.pk):
+            for c in Counter_bagian.objects.using(os.environ.get("database")).filter(divisi_id=d.pk):
                 obj = {
                     'counter':c.pk,
                     "counter_bagian":c.counter_bagian,
                 }
-                pengeluaran = Pengeluaran.objects.raw("SELECT master_barang_id_id,id FROM atkapp_pengeluaran WHERE MONTH(tgl_keluar) = %s AND YEAR(tgl_keluar) = %s AND counter_id_id=%s AND status=0",[bulan,tahun,c.pk])
+                pengeluaran = Pengeluaran.objects.using(os.environ.get("database")).raw("SELECT master_barang_id_id,id FROM atkapp_pengeluaran WHERE MONTH(tgl_keluar) = %s AND YEAR(tgl_keluar) = %s AND counter_id_id=%s AND status=0",[bulan,tahun,c.pk])
                 brg = {}
                 subTotal = 0
                 for p in pengeluaran:
@@ -1203,7 +1297,7 @@ def printPdfLaporan(r):
         crs.execute("WITH bayar AS(SELECT atkapp_pengeluaran.id,atkapp_pengeluaran.divisi_id,atkapp_pengeluaran.qty, atkapp_master_barang.harga FROM atkapp_pengeluaran JOIN atkapp_master_barang ON atkapp_pengeluaran.master_barang_id_id=atkapp_master_barang.id WHERE atkapp_pengeluaran.status=0 AND MONTH(atkapp_pengeluaran.tgl_keluar) = %s AND YEAR(atkapp_pengeluaran.tgl_keluar) = %s) SELECT SUM(bayar.harga * bayar.qty),bayar.divisi_id FROM bayar GROUP BY bayar.divisi_id",[bulan,tahun])
         for bc in crs.fetchall():
             try:
-                divisi = Divisi.objects.filter(pk=bc[1])
+                divisi = Divisi.objects.using(os.environ.get("database")).filter(pk=bc[1])
                 if not divisi.exists():
                     continue
                 totalDivisiNon += int(bc[0])
@@ -1212,13 +1306,14 @@ def printPdfLaporan(r):
                 continue
         totalPengeluaran = 0
         data_pengeluaran = []
-        brg = Master_barang.objects.all()
+        brg = Master_barang.objects.using(os.environ.get("database")).all()
         obj = {}
         # print(monthrange(int(tahun),int(bulan)))
         dr = datetime.strptime("01-"+bulan+"-"+tahun+" 00:00:00","%d-%m-%Y %H:%M:%S")
-        sp = datetime.strptime(str(calendar.monthrange(int(tahun),int(bulan))[1])+"-"+bulan+"-"+tahun+" 23:59:59","%d-%m-%Y %H:%M:%S")
-        for brg in Master_barang.objects.values("id").all():
-            datap = Pengeluaran.objects.filter(master_barang_id_id=brg["id"],tgl_keluar__range=[dr,sp])
+        sp = datetime.strptime(str(monthrange(int(tahun),int(bulan))[1])+"-"+bulan+"-"+tahun+" 23:59:59","%d-%m-%Y %H:%M:%S")
+        print(dr,sp)
+        for brg in Master_barang.objects.using(os.environ.get("database")).values("id").all():
+            datap = Pengeluaran.objects.using(os.environ.get("database")).filter(master_barang_id_id=brg["id"],tgl_keluar__range=[dr,sp])
             for d in datap:
                 try:
                     if d.status == 0:
@@ -1243,19 +1338,31 @@ def printPdfLaporan(r):
                     else:
                         totalPengeluaran += d.harga_jual * d.qty
                         obj[brg["id"]] = [{"tipe":"non bayar","total":0},{"tipe":"bayar cash","total":0},{"tipe":"potong faktur","total":d.harga_jual * d.qty}]
+
         template = get_template('formatLaporan/semuaLaporanCounter.html')
+        # for o in obj:
+        data_pengeluaran = []
         for k in obj.keys():
             # print(k)
             try:
-                print(k)
-                nama_brg = Master_barang.objects.values("barang").get(pk=k)
-                print(nama_brg)
+                nama_brg = Master_barang.objects.using(os.environ.get("database")).values("barang").get(pk=k)
                 for o in obj[k]:
                     o["total"] = '{:,}'.format(o["total"])
                 o = {"barang":nama_brg["barang"],"data":obj[k]}
                 data_pengeluaran.append(o)
             except:
                 continue
+            
+        # options = {
+        #     'page-size': 'Letter',
+        #     'margin-top': '0.75in',
+        #     'margin-right': '0.75in',
+        #     'margin-bottom': '0.75in',
+        #     'margin-left': '0.75in',
+        #     'encoding': "UTF-8",
+        #     "enable-local-file-access": "= None
+        # }
+
         ctx = template.render({"data":data,'bulan':bulanArr[int(bulan) - 1],'tahun':tahun,'bydivisi':bydivisi,'bydivisiNon':bydivisiNon,'totalDivisiNon':'{:,}'.format(totalDivisiNon),'totalCounter':'{:,}'.format(totalCounter),'totalDivisi':'{:,}'.format(totalDivisi),'pembelian':pembelian,'totalPembelian':'{:,}'.format(totalPembelian),"brg":brg,"data_pengeluaran":data_pengeluaran,"totalPengeluaran":'{:,}'.format(totalPengeluaran)})
         # cfg = pdfkit.configuration(wkhtmltopdf=r'/usr/local/bin/wkhtmltopdf')
         # file = pdfkit.from_string(ctx,r'static/pdf/semuaPengeluaranCounter.pdf',configuration=cfg,options=options,css=r'static/css/laporan.css')
@@ -1267,7 +1374,7 @@ def printPdfLaporan(r):
         with open(r'static/pdf/semuaPengeluaranCounter.pdf','rb') as f:
             http = HttpResponse(f.read(),'application/pdf')
             http["Content-Disposition"] = 'filename=laporanCounter'+str(datetime.now())+'.pdf'
-            return http    
+            return http     
 
 def lgtr(r):
     logout(r) 
@@ -1276,20 +1383,29 @@ def lgtr(r):
 @login_required
 def kategori(r):
     # get all kategori and return render send to template
-    return render(r,"kategori/kategori.html")
+    cabang = os.environ.get("cabang").split(" ")[-1]
+    tipe = os.environ.get("cabang").split(" ")[0:-1]
+    tipe = " ".join(tipe)
+    cabangs = []
+    for p in r.user.get_all_permissions():
+        if re.search(r"cabang\..+",p,re.IGNORECASE):
+            name = Permission.objects.get(codename=str(p).split(".")[1])
+            print(name.name)
+            cabangs.append({"codename":p.split(".")[1],"nama":name.name})
+    return render(r,"kategori/kategori.html",{'cabang':cabang,'cabangs':cabangs,'tipe':tipe})
 
 # get kategori function with filter status active
 @login_required
 def getKategori(r):
-    kategori = Kategori_brg.objects.all()
+    kategori = Kategori_brg.objects.using(os.environ.get("database")).all()
     kategori = serialize("json",kategori)
-    return JsonResponse({"data":json.loads(kategori)},status=200,safe=False)
+    return JsonResponse({"data":json.loads(kategori)},status=200,safe=False)    
 
 # get kategori by id
 def getKategoriById(r):
     if r.method == "POST":
         id = r.POST.get("id")
-        kategori = Kategori_brg.objects.get(pk=id)
+        kategori = Kategori_brg.objects.using(os.environ.get("database")).get(pk=id)
         kategori = serialize("json",[kategori])
         kategori = json.loads(kategori)
         return JsonResponse({"data":kategori[0]},status=200,safe=False)
@@ -1298,15 +1414,16 @@ def getKategoriById(r):
 @login_required
 def addKategori(r):
     # get all kategori and return render send to template
+    # get all kategori and return render send to template
     if r.method == "POST":
         kategori = r.POST.get("kategori")
         # cek if kategori sudah ada
-        cek = Kategori_brg.objects.filter(kategori=kategori)
+        cek = Kategori_brg.objects.using(os.environ.get("database")).filter(kategori=kategori)
         if cek:
             return JsonResponse({"message":"kategori sudah ada!"},status=400,safe=False)
         status = r.POST.get("status")
         k = Kategori_brg(kategori=kategori, status=status)
-        k.save()
+        k.save(using=os.environ.get("database"))
         return JsonResponse({"message":"success create kategori"},status=200,safe=False)
 
 @login_required
@@ -1317,35 +1434,47 @@ def editKategori(r):
         kategori = r.POST.get("kategori")
         status = r.POST.get("status")
         if status == "DC":
-            brg = Master_barang.objects.filter(kategori_id=id).values("id")
+            brg = Master_barang.objects.using(os.environ.get("database")).filter(kategori_id=id).values("id")
             arrId = [str(b["id"]) for b in brg] 
             gabung = ",".join(arrId)
-            stk = Stok_brg.objects.raw("SELECT * FROM atkapp_stok_brg WHERE created_at IN(select MAX(created_at) from atkapp_stok_brg group by(master_barang_id_id)) AND master_barang_id_id IN("+gabung+")")
+            stk = Stok_brg.objects.using(os.environ.get("database")).raw("SELECT * FROM atkapp_stok_brg WHERE created_at IN(select MAX(created_at) from atkapp_stok_brg group by(master_barang_id_id)) AND master_barang_id_id IN("+gabung+")")
             for s in stk:
                 if s.stok > 0:
                     return JsonResponse({"message":"Stok barang masih ada!"},status=400)
             # if not brg:
             #     return JsonResponse({"message":"Kategori masih memiliki barang!"},status=400,safe=False)
-        k = Kategori_brg.objects.get(pk=id)
+        k = Kategori_brg.objects.using(os.environ.get("database")).using(os.environ.get("database")).get(pk=id)
         k.kategori = kategori
         k.status = status
-        k.save()
+        k.save(using=os.environ.get("database"))
         return JsonResponse({"message":"success edit kategori"},status=200,safe=False)
 
 
 @login_required
 def personal(r):
-    counter = Counter_bagian.objects.all()
+    counter = Counter_bagian.objects.using(os.environ.get("database")).all()
+    cabang = os.environ.get("cabang").split(" ")[-1]
+    tipe = os.environ.get("cabang").split(" ")[0:-1]
+    tipe = " ".join(tipe)
+    cabangs = []
+    for p in r.user.get_all_permissions():
+        if re.search(r"cabang\..+",p,re.IGNORECASE):
+            name = Permission.objects.get(codename=str(p).split(".")[1])
+            print(name.name)
+            cabangs.append({"codename":p.split(".")[1],"nama":name.name})
     return render(r,"personal/personal.html",{
-        "counter":counter
+        "counter":counter,
+        'cabang':cabang,
+        'cabangs':cabangs,
+        'tipe':tipe
     })
 
 @login_required
 def getPersonal(r):
-    personal = Personal.objects.all()
+    personal = Personal.objects.using(os.environ.get("database")).all()
     data = []
     for p in personal:
-        counter = Counter_bagian.objects.get(pk=p.counter_bagian_id.pk)
+        counter = Counter_bagian.objects.using(os.environ.get("database")).get(pk=p.counter_bagian_id.pk)
         obj = {
             "id": p.pk,
             "personal": p.nama,
@@ -1358,7 +1487,7 @@ def getPersonal(r):
 def getPersonalById(r):
     if r.method == "POST":
         id = r.POST.get("id")
-        personal = Personal.objects.get(pk=id) 
+        personal = Personal.objects.using(os.environ.get("database")).get(pk=id) 
         personal = serialize("json", [personal])
         personal = json.loads(personal)
         return JsonResponse({"data": personal[0]}, status=200, safe=False)
@@ -1369,10 +1498,10 @@ def addPersonal(r):
     if r.method == "POST":
         personal = r.POST.get("person")
         counter = r.POST.get("counter")
-        cek = Personal.objects.filter(nama=personal)
+        cek = Personal.objects.using(os.environ.get("database")).filter(nama=personal)
         if len(cek) > 0:
             return JsonResponse({"message": "personal sudah ada!"}, status=400, safe=False)
-        c = Counter_bagian.objects.get(pk=counter)
+        c = Counter_bagian.objects.using(os.environ.get("database")).get(pk=counter)
         if not c:
             return JsonResponse({"message": "counter tidak ada!"}, status=400, safe=False)
 
@@ -1381,7 +1510,7 @@ def addPersonal(r):
         p = Personal()
         p.nama = personal
         p.counter_bagian_id = c
-        p.save()
+        p.save(using=os.environ.get("database"))
         return JsonResponse({"message": "success create personal"}, status=200, safe=False)
 
 @login_required
@@ -1391,24 +1520,33 @@ def editPersonal(r):
         personal = r.POST.get("person")
         counter = r.POST.get("counter")
         status = r.POST.get("status")
-        p = Personal.objects.get(pk=id)
-        c = Counter_bagian.objects.get(pk=counter)
+        p = Personal.objects.using(os.environ.get("database")).using(os.environ.get("database")).get(pk=id)
+        c = Counter_bagian.objects.using(os.environ.get("database")).get(pk=counter)
         if c.status == "DC":
             return JsonResponse({"message": "Counter sudah tidak aktif!"}, status=200, safe=False)
         p.nama = personal
         p.counter_bagian_id = c
         p.status = status
-        p.save()
+        p.save(using=os.environ.get("database"))
         return JsonResponse({"message": "success edit personal"}, status=200, safe=False)
 
 @login_required
 def counter(r):
-    d = Divisi.objects.filter(status="AC")
-    return render(r,"counter/counter.html",{'divisi':d})
+    d = Divisi.objects.using(os.environ.get("database")).filter(status="AC")
+    cabang = os.environ.get("cabang").split(" ")[-1]
+    tipe = os.environ.get("cabang").split(" ")[0:-1]
+    tipe = " ".join(tipe)
+    cabangs = []
+    for p in r.user.get_all_permissions():
+        if re.search(r"cabang\..+",p,re.IGNORECASE):
+            name = Permission.objects.get(codename=str(p).split(".")[1])
+            print(name.name)
+            cabangs.append({"codename":p.split(".")[1],"nama":name.name})
+    return render(r,"counter/counter.html",{'divisi':d,"cabang":cabang,'cabangs':cabangs,'tipe':tipe})
 
 @login_required
 def getCounter(r):
-        counter = Counter_bagian.objects.all()
+        counter = Counter_bagian.objects.using(os.environ.get("database")).all()
         data = []
         for c in counter:
             obj = {
@@ -1423,7 +1561,7 @@ def getCounter(r):
 def getCounterById(r):
     if r.method == "POST":
         id = r.POST.get("id")
-        counter = Counter_bagian.objects.get(pk=id)
+        counter = Counter_bagian.objects.using(os.environ.get("database")).get(pk=id)
         counter = serialize("json", [counter])
         counter = json.loads(counter)
         return JsonResponse({"data": counter[0]}, status=200, safe=False)
@@ -1434,10 +1572,10 @@ def addCounter(r):
     if r.method == "POST":
         counter = r.POST.get("counter")
         divisi = r.POST.get("divisi")
-        if Counter_bagian.objects.filter(counter_bagian=counter,divisi_id=int(divisi)).exists():
+        if Counter_bagian.objects.using(os.environ.get("database")).filter(counter_bagian=counter,divisi_id=int(divisi)).exists():
             return JsonResponse({"message": "counter sudah ada!"}, status=400, safe=False)
         c = Counter_bagian(counter_bagian=counter,divisi_id=int(divisi))
-        c.save()
+        c.save(using=os.environ.get("database"))
         return JsonResponse({"message": "success create counter"}, status=200, safe=False)
 
 @login_required
@@ -1450,20 +1588,20 @@ def editCounter(r):
 
         if status == 'AC':
             try:
-                d = Divisi.objects.get(pk=int(divisi))
+                d = Divisi.objects.using(os.environ.get("database")).get(pk=int(divisi))
                 if d.status == 'DC':
                     return JsonResponse({"message": "Divisi sudah tidak aktif lagi"}, status=400, safe=False)
             except:
                 return JsonResponse({"message": "success edit counter"}, status=400, safe=False)
 
-        c = Counter_bagian.objects.get(pk=id)
+        c = Counter_bagian.objects.using(os.environ.get("database")).get(pk=id)
         # for p in person:
         #     p.status = status
-        #     p.save()
+        #     p.save(using=os.environ.get("database"))
         c.counter_bagian = counter
         c.divisi_id = divisi
         c.status = status
-        c.save()
+        c.save(using=os.environ.get("database"))
         return JsonResponse({"message": "success edit counter"}, status=200, safe=False)
 
 
@@ -1471,26 +1609,35 @@ def editCounter(r):
 
 @login_required
 def divisi(r):
-    d = Divisi.objects.filter(status="AC")
-    return render(r,"divisi/divisi.html",{'divisi':d})
+    d = Divisi.objects.using(os.environ.get("database")).filter(status="AC")
+    cabang = os.environ.get("cabang").split(" ")[-1]
+    tipe = os.environ.get("cabang").split(" ")[0:-1]
+    tipe = " ".join(tipe)
+    cabangs = []
+    for p in r.user.get_all_permissions():
+        if re.search(r"cabang\..+",p,re.IGNORECASE):
+            name = Permission.objects.get(codename=str(p).split(".")[1])
+            print(name.name)
+            cabangs.append({"codename":p.split(".")[1],"nama":name.name})
+    return render(r,"divisi/divisi.html",{'divisi':d,'cabang':cabang,'cabangs':cabangs,'tipe':tipe})
 
 @login_required
 def getDivisi(r):
-        divisi = Divisi.objects.all()
-        data = []
-        for d in divisi:
-            obj = {
-                'divisi':d.divisi,
-                'status':d.status,
-                'pk':d.id,
-            }
-            data.append(obj)
-        return JsonResponse({"data":data}, status=200, safe=False)
+    divisi = Divisi.objects.using(os.environ.get("database")).all()
+    data = []
+    for d in divisi:
+        obj = {
+            'divisi':d.divisi,
+            'status':d.status,
+            'pk':d.id,
+        }
+        data.append(obj)
+    return JsonResponse({"data":data}, status=200, safe=False)
 
 def getDivisiById(r):
     if r.method == "POST":
         id = r.POST.get("id")
-        divisi = Divisi.objects.get(pk=id)
+        divisi = Divisi.objects.using(os.environ.get("database")).get(pk=id)
         divisi = serialize("json", [divisi])
         divisi = json.loads(divisi)
         return JsonResponse({"data": divisi[0]}, status=200, safe=False)
@@ -1500,10 +1647,10 @@ def getDivisiById(r):
 def addDivisi(r):
     if r.method == "POST":
         divisi = r.POST.get("divisi")
-        if Divisi.objects.filter(divisi=divisi).exists():
+        if Divisi.objects.using(os.environ.get("database")).filter(divisi=divisi).exists():
             return JsonResponse({"message": "divisi sudah ada!"}, status=400, safe=False)
         d = Divisi(divisi=divisi,status="AC")
-        d.save()
+        d.save(using=os.environ.get("database"))
         return JsonResponse({"message": "success create divisi"}, status=200, safe=False)
 
 @login_required
@@ -1513,39 +1660,38 @@ def editDivisi(r):
         divisi = r.POST.get("divisi")
         status = r.POST.get("status")
         if status == 'DC':
-            counter = Counter_bagian.objects.filter(divisi_id=int(id))
+            counter = Counter_bagian.objects.using(os.environ.get("database")).filter(divisi_id=int(id))
             for c in counter:
-                Personal.objects.filter(counter_bagian_id_id=c.pk).update(status="DC")
+                Personal.objects.using(os.environ.get("database")).filter(counter_bagian_id_id=c.pk).update(status="DC")
             counter.update(status="DC")
         elif status == "AC":
-            counter = Counter_bagian.objects.filter(divisi_id=int(id))
+            counter = Counter_bagian.objects.using(os.environ.get("database")).filter(divisi_id=int(id))
             for c in counter:
-                Personal.objects.filter(counter_bagian_id_id=c.pk).update(status="AC")
+                Personal.objects.using(os.environ.get("database")).filter(counter_bagian_id_id=c.pk).update(status="AC")
             counter.update(status="AC")
-        d = Divisi.objects.get(pk=id)
+        d = Divisi.objects.using(os.environ.get("database")).get(pk=id)
         # for p in person:
         #     p.status = status
-        #     p.save()
+        #     p.save(using=os.environ.get("database"))
         d.divisi = divisi
         d.status = status
-        d.save()
+        d.save(using=os.environ.get("database"))
         return JsonResponse({"message": "success edit divisi"}, status=200, safe=False)
-
-#     template = get_template("pembelianLaporan.html")
-#     output = template.render() 
-#     config = pdfkit.configuration(wkhtmltopdf=r"C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe")
-#     pdfkit.from_string(output,"atkapp/static/pdf/coba.pdf",configuration=config)
-#     pdf = open(r"C:\project\Project-Atk\atk\atkapp\static\pdf\coba.pdf","rb")
-#     # response = HttpResponse(pdf.read(), content_type='application/pdf')  # Generates the response as pdf response.
-#     # response["Content-Type"] = "application/force-download"
-#     # response['Content-Disposition'] = 'attachment;filename=file:///C:/Project/Project-Atk/atk/atkapp/static/pdf/coba.pdf'
-#     # pdf.close()
-#     return FileResponse(pdf)
 
 @login_required
 def login(r):
     id = r.user.id
-    return render(r,'login/login.html',{"id":id})
+    cabang = os.environ.get("cabang").split(" ")[-1]
+    tipe = os.environ.get("cabang").split(" ")[0:-1]
+    tipe = " ".join(tipe)
+    cabangs = []
+    permission = Permission.objects.filter(content_type__app_label="cabang")
+    for p in r.user.get_all_permissions():
+        if re.search(r"cabang\..+",p,re.IGNORECASE):
+            name = Permission.objects.get(codename=str(p).split(".")[1])
+            print(name.name)
+            cabangs.append({"codename":p.split(".")[1],"nama":name.name})
+    return render(r,'login/login.html',{"id":id,'cabang':cabang,'cabangs':cabangs,'tipe':tipe,"permissions":permission})
 
 
 @login_required
@@ -1562,12 +1708,55 @@ def tambahUser(r):
     username = r.POST.get("username")
     email = r.POST.get("email")
     password = r.POST.get("password")
+    cabang = r.POST.getlist("cabang[]")
+    permissions = []
+    for c in cabang:
+        try:
+            permissions.append(Permission.objects.get(pk=c))
+        except:
+            continue
     try:
         if email == "":
             get = User.objects.create_user(username=username,password=password)
         else:
             get = User.objects.create_user(username=username,email=email,password=password)
+        print(permissions)
+        get.user_permissions.set(permissions)
         get.save() 
         return JsonResponse({'status':"ok","message":"berhasil menambahkan user"},status=200)
-    except:
-        return JsonResponse({'status':"err","message":"terjadi kesalahan"},status=400)
+    except Exception as e:
+        return JsonResponse({'status':"err","message":str(e)},status=500)
+
+@login_required
+def cabang(r,cbg):
+    cabang = "cabang."+cbg
+    ps = r.user.has_perm(cabang)
+    if not Permission.objects.filter(codename=cbg).exists():
+        messages.add_message(r,messages.ERROR,"Terjadi kesalahan")
+        return redirect('/')
+    prs = Permission.objects.get(codename=cbg)
+    if ps:
+        os.environ["cabang"] = prs.name
+        os.environ["database"] = "atk_"+cbg
+        return redirect("/atk/")
+    else:
+        messages.add_message(r,messages.ERROR,"Anda tidak memiliki akses kecabang ini")
+        return redirect('/atk/')
+    
+
+def dashboard_middleware(get_response):
+    def middlewarex(r):
+        # Code to be executed for each r before
+        # the view (and later middleware) are called.
+        if os.environ.get("database") is None:
+            logout(r)
+
+        response = get_response(r)
+
+            # return redirect("login")
+        # Code to be executed for each r/response after
+        # the view is called.
+
+        return response
+
+    return middlewarex

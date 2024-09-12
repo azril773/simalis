@@ -16,9 +16,35 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from django.contrib.auth import views as auth_views
+from atkapp import views
+from django.contrib.auth import views as auth_views,models, authenticate,login,logout
+from django.shortcuts import redirect
+import os
+from django.contrib import messages
+def middleware(r): 
+    try: 
+        user = models.User.objects.using("default").get(username=r.POST.get("username"))
+    except:
+        messages.add_message(r,messages.ERROR,"User tidak ada")
+        return redirect('/')
+    cabang = "cabang."+r.POST.get("cabang")
+    ps = user.has_perm(cabang)
+    if not models.Permission.objects.filter(codename=r.POST.get("cabang")).exists():
+        messages.add_message(r,messages.ERROR,"Terjadi kesalahan")
+        return redirect('/')
+    prs = models.Permission.objects.get(codename=r.POST.get("cabang"))
+    if ps:
+        os.environ["cabang"] = prs.name
+        os.environ["database"] = "atk_"+r.POST.get("cabang")
+        login(r,user)
+        return redirect("/atk/")
+    else:
+        messages.add_message(r,messages.ERROR,"Anda tidak memiliki akses kecabang ini")
+        return redirect('/')
+        
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("",auth_views.LoginView.as_view(template_name="auth/login.html"),name="login"),
+    path("login/",middleware),
     path("atk/",include("atkapp.urls"))
 ]

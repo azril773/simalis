@@ -5,32 +5,56 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="{% static "bootstrap/css/bootstrap.min.css" %}">
+  <link rel="stylesheet" href="{% static "css/selectize.default.css" %}">
   <title>Login</title>
 </head>
 <body class="">
   <div class="login d-flex justify-content-center" style="margin-top: 250px;">
     <div
-      class="card align-items-center p-3" style="width: 18rem;"
+    class="card align-items-center p-3" style="width: 18rem;"
     >
-      <h5 class=""
+    {% if messages %}
+      {% for msg in messages %}
+      <div class="alert alert-danger"style="font-size: 14px;" role="alert">
+        {{msg}}
+      </div>
+      
+      {% endfor %}
+    {% endif %}
+    <h5 class=""
         >Welcome to SIMALIS</h5
       >
-      <form method="post">
+      <form method="post" action="/login/">
         {% csrf_token %}
         <label for="username" class="form-label" style="font-size: 14px;">Username</label>
         <input type="text" name="username" id="username" class="form-control" placeholder="username" />
         <label for="password" class="form-label mt-3" style="font-size: 14px;">Password</label>
         <input type="password" name="password" id="password" class="form-control" placeholder="****" />
-        
+        <label for="cabang" class="mt-2" style="font-size: 14px;">Cabang</label>
+        <select name="cabang" id="cabang">
+          <option value="">Pilih Cabang</option>
+        </select>
         <div class="mt-3 d-flex justify-content-end">
             <button type="button" class="btn btn-primary button">login</button>
         </div>
-      <input type="hidden" name="next" value="atk">
   </form>
     </div>
   </div>
   <script src="{% static "js/jquery.min.js" %}"></script>
+  <script src="{% static "js/selectize.min.js" %}"></script>
   <script>
+    $("#cabang").selectize({
+      valueField:"value",
+      labelField:"cabang",
+      searchField:"cabang",
+      options:[
+        {cabang:"Plaza Asia Tasikmalaya",value:"pat"},
+        {cabang:"Plaza Asia Sumedang",value:"pas"},
+        {cabang:"Asia Toserba Cirebon",value:"crb"},
+        {cabang:"Asia Toserba Cihideung",value:"chd"},
+        {cabang:"Asia Toserba Garut",value:"grt"},
+      ]
+    })
     $("#username").focus();
     $("#username").on("keypress", function (e) {
       if (e.which == 13) {

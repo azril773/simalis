@@ -1,3 +1,6 @@
+const cabang = $("#cabang").selectize({
+    maxItems:null
+})
 const token = document.querySelector("[name=csrfmiddlewaretoken]").value
 $("#editButton").on("click",function(e){
 
@@ -21,10 +24,11 @@ $("#tambahButton").on("click",function(e){
     const password = $("#password").val()
     const username = $("#username").val()
     const email = $("#email").val()
+    const cbg = $("#cabang").val()
     if(username == "" || password == "") return 
     $.ajax({
         url:`/atk/tambahUser/`,
-        data:{password,username,email},
+        data:{password,username,email,cabang:cbg},
         method:"post",
         headers:{"X-CSRFToken":token},
         success(e){
@@ -57,7 +61,7 @@ $("#email").off("keydown").on("keydown",function(e){
 })
 $("#password").off("keydown").on("keydown",function(e){
     if(e.key == "Enter"){
-    $("#tambahButton").click()
+        cabang[0].selectize.focus()
     }
 })
 

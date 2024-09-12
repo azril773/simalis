@@ -114,4 +114,5 @@ urlpatterns = [
     path("loginEdit/",views.login,name="loginEdit"),
     path("editPassword/",views.editPassword,name="editPassword"),
     path("tambahUser/",views.tambahUser,name="tambahUser"),
+    path("cabang/<str:cbg>",views.cabang,name="cabang"),
 ]

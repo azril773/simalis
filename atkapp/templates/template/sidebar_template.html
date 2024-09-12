@@ -1,7 +1,13 @@
 {% load static %}		
+
 		<div class="wrapper d-flex align-items-stretch">
+      
 			<nav id="sidebar">
 				<div class="p-4 pt-5">
+          <div class="d-flex justify-content-center mb-5">
+            <h5 class="text-white"><b>{{tipe}} {{cabang}}</b></h5>
+
+          </div>
 		  		<a href="#" class="img logo mb-5" style="background-image: url(/static/image/pencil.png)">
 
           </a>
@@ -41,6 +47,16 @@
                 </li>
               </ul>
 	          </li>
+	          <li>
+              <a href="#pageCabang" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">Cabang</a>
+              <ul class="collapse list-unstyled" id="pageCabang">
+                {% for c in cabangs %}
+                <li>
+                    <a href="/atk/cabang/{{c.codename}}">{{c.nama}}</a>
+                </li>
+                {% endfor %}
+              </ul>
+	          </li>
             <li>
                 <a href="{% url "logout" %}" class="text-danger">Logout</a>
             </li>
@@ -68,6 +84,10 @@
             <button class="btn btn-dark d-inline-block d-lg-none ml-auto" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                 <i class="fa fa-bars"></i>
             </button>
+            <div class="d-flex justify-content-center">
+              <h5 class=""><b>{{tipe}} <span class="text-danger">{{cabang}}</span></b></h5>
+            
+            </div>
 
             
           </div>

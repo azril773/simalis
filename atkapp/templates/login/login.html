@@ -23,9 +23,18 @@
                 <label for="email" class='form-label'>Email</label>
                 <input type="email" class="form-control" id='email'>
             </div>
-            <div class="col-12">
+            <div class="col-6">
                 <label for="password" class='form-label'>Password</label>
-                <input type="password" class="form-control" id='password'>
+                <input type="password" class="form-control" id="password">
+            </div>
+            <div class="col-6">
+                <label for="password" class='form-label'>Cabang</label>
+                <select name="cabang" id="cabang">
+                    <option value="">Pilih Cabang</option>
+                    {% for p in permissions %}
+                        <option value="{{p.pk}}">{{p.name}}</option>
+                    {% endfor %}
+                </select>
             </div>
         </div>
         <button class="btn btn-primary mt-2" id="tambahButton">Tambah</button>
@@ -33,7 +42,7 @@
     {% endblock isi %}
     {% block js %}
 
-        <script src="{% static "js/login.js" %}?169489">
+        <script src="{% static "js/login.js" %}?9874696315">
             
         </script>
 
