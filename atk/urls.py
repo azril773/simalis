@@ -31,8 +31,9 @@ def middleware(r):
     permissions = models.Permission.objects.filter(content_type__app_label="cabang")
     for p in permissions:
         if user.has_perm("cabang."+p.codename):
-            os.environ["cabang"] = p.name
-            os.environ["database"] = "atk_"+p.codename
+            r.session["cabang"] = p.name
+            r.session["codename"] = p.codename
+            r.session["database"] = "atk_"+p.codename
             login(r,user)
             return redirect("/atk/")
     messages.add_message(r,messages.ERROR,"Anda tidak memiliki akses")
