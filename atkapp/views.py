@@ -1673,12 +1673,14 @@ def login(r):
     tipe = r.session.get("cabang").split(" ")[0:-1]
     tipe = " ".join(tipe)
     cabangs = []
+    user = User.objects.get(pk=id)
+    superuser = user.is_superuser
     permission = Permission.objects.filter(content_type__app_label="cabang")
     for p in r.user.get_all_permissions():
         if re.search(r"cabang\..+",p,re.IGNORECASE):
             name = Permission.objects.get(codename=str(p).split(".")[1])
             cabangs.append({"codename":p.split(".")[1],"nama":name.name})
-    return render(r,'login/login.html',{"id":id,'cabang':cabang,'cabangs':cabangs,'tipe':tipe,"permissions":permission})
+    return render(r,'login/login.html',{"id":id,'cabang':cabang,'cabangs':cabangs,'tipe':tipe,"permissions":permission,'superuser':superuser})
 
 
 @login_required
