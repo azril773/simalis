@@ -247,12 +247,12 @@ def editPembelian(r):
                 return JsonResponse({"message":"barang sudah tidak aktif!"},status=400,safe=False)
         
             update = int(qty) - int(pembelian.qty) # -100
-            get = Stok_brg.objects.using(r.session.get("database")).select_for_update().filter(master_barang_id=brg).last() #pulpen 100
+            get = Stok_brg.objects.using(r.session.get("database")).filter(master_barang_id=brg).last() #pulpen 100
             if int(brg) != int(pembelian.master_barang_id.pk):
                 # return False
                 update = qty
                 qty_sebelum = pembelian.qty
-                stk = Stok_brg.objects.using(r.session.get("database")).select_for_update().filter(master_barang_id=pembelian.master_barang_id).last()
+                stk = Stok_brg.objects.using(r.session.get("database")).filter(master_barang_id=pembelian.master_barang_id).last()
                 brgSb = Master_barang.objects.using(r.session.get("database")).get(pk=pembelian.master_barang_id.pk)
                 newStok = Stok_brg()
                 newStok.tgl_transaksi = datetime.now()

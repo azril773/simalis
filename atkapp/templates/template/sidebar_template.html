@@ -13,52 +13,52 @@
           </a>
 	        <ul class="list-unstyled components mb-5">
             <li>
-                <a href="{% url "barang" %}">Barang</a>
+                <a href="{% url "barang" %}" style="text-decoration: none;">Barang</a>
             </li>
             <li>
-              <a href="{% url "pembelian" %}">Pembelian</a>
+              <a href="{% url "pembelian" %}" style="text-decoration: none;">Pembelian</a>
             </li>
             <li>
-              <a href="{% url "pengeluaran" %}">Pengeluaran</a>
+              <a href="{% url "pengeluaran" %}" style="text-decoration: none;">Pengeluaran</a>
             </li>
             <li>
-              <a href="{% url "laporan" %}">Laporan</a>
+              <a href="{% url "laporan" %}" style="text-decoration: none;">Laporan</a>
             </li>
             <li>
-              <a href="{% url "generalReport" %}">Laporan Bulanan</a>
+              <a href="{% url "generalReport" %}" style="text-decoration: none;">Laporan Bulanan</a>
             </li>
 	          <li>
-              <a href="#pageSubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">Pengaturan</a>
+              <a href="#pageSubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle" style="text-decoration: none;">Pengaturan</a>
               <ul class="collapse list-unstyled" id="pageSubmenu">
                 <li>
-                    <a href="{% url "kategori" %}">Kategori</a>
+                    <a href="{% url "kategori" %}" style="text-decoration: none;">Kategori</a>
                 </li>
                 <li>
-                    <a href="{% url "divisi" %}">Divisi</a>
+                    <a href="{% url "divisi" %}" style="text-decoration: none;">Divisi</a>
                 </li>
                 <li>
-                    <a href="{% url "counter" %}">Counter</a>
+                    <a href="{% url "counter" %}" style="text-decoration: none;">Counter</a>
                 </li>
                 <li>
-                    <a href="{% url "personal" %}">Person</a>
+                    <a href="{% url "personal" %}" style="text-decoration: none;">Person</a>
                 </li>
                 <li>
-                    <a href="{% url "loginEdit" %}">Login</a>
+                    <a href="{% url "loginEdit" %}" style="text-decoration: none;">Login</a>
                 </li>
               </ul>
 	          </li>
 	          <li>
-              <a href="#pageCabang" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">Cabang</a>
+              <a href="#pageCabang" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle" style="text-decoration: none;">Cabang</a>
               <ul class="collapse list-unstyled" id="pageCabang">
                 {% for c in cabangs %}
                 <li>
-                    <a href="/atk/cabang/{{c.codename}}">{{c.nama}}</a>
+                    <a href="/atk/cabang/{{c.codename}}" style="text-decoration: none;">{{c.nama}}</a>
                 </li>
                 {% endfor %}
               </ul>
 	          </li>
             <li>
-                <a href="{% url "logout" %}" class="text-danger">Logout</a>
+                <a href="{% url "logout" %}" class="text-danger" style="text-decoration: none;">Logout</a>
             </li>
 	        </ul>
 
@@ -78,8 +78,7 @@
           <div class="container-fluid">
 
             <button type="button" id="sidebarCollapse" class="btn btn-primary">
-              <i class="fa fa-bars"></i>
-              <span class="sr-only">Toggle Menu</span>
+              <svg width="25" height="25" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M4 18L20 18" stroke="#ffffff" stroke-width="2" stroke-linecap="round"></path> <path d="M4 12L20 12" stroke="#ffffff" stroke-width="2" stroke-linecap="round"></path> <path d="M4 6L20 6" stroke="#ffffff" stroke-width="2" stroke-linecap="round"></path> </g></svg>
             </button>
             <button class="btn btn-dark d-inline-block d-lg-none ml-auto" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                 <i class="fa fa-bars"></i>
