@@ -129,7 +129,7 @@ $("#buttonEditBarang").click(function (e) {
     success: (e) => {
       console.log(e);
       if (e.msg.length !== 0) {
-        $("#msg").html("");
+        $("#msg div").remove();
         e.msg.forEach((err) => {
           console.log(err);
           $("#msg").append(`<li class="alert alert-danger">${err}</li>`);

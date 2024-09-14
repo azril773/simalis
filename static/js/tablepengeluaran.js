@@ -134,7 +134,13 @@ const table = new DataTable(".tablePengeluaran", {
       },
     },
   ],
-  scrollX:true
+  scrollX:true,
+  destroy: true,
+  ordering: false,
+  paging: false,
+  scrollX:"100%",
+  scrollY: 300,
+  processing: true,
 });
 
 const tableT = new DataTable(".tableTPengeluaran", {
@@ -243,7 +249,6 @@ const tableT = new DataTable(".tableTPengeluaran", {
       },
     },
   ],
-  scrollX:true
 });
 
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -373,6 +378,7 @@ function personChangeEdit(id) {
     headers: { "X-CSRFToken": token },
     success: (e) => {
       selectPersonEdit = true
+      console.log(e.data)
       counter.setValue(e.data[0].fields.counter_bagian_id);
       divisi.setValue(e.data[1].fields.divisi);
       statusEditSelectize[0].selectize.focus()
@@ -591,6 +597,7 @@ $("#editPengeluaran").click(function (e) {
       table.ajax.reload();
     },
     error: (err) => {
+      $(".msg").html("")
       $(".msg").append(`
           <span class="alert alert-danger">${err.responseJSON.message}!</span>
         `);
@@ -604,6 +611,7 @@ $("#addPengeluaran").click(function (e) {
   const tgl_keluar = $("#tgl_keluarAdd").val();
   const barang = $("#barangAdd").val();
   const counter = $("#counterAdd").val();
+  const divisi = $("#divisiAdd").val();
   const person = $("#personAdd").val();
   const qty = $("#qtyAdd").val().split(".").join("")
   const status = $("#statusAdd").val();
@@ -611,7 +619,7 @@ $("#addPengeluaran").click(function (e) {
   $.ajax({
     url: `/atk/tambahTPengeluaran/`,
     method: "post",
-    data: { tgl_keluar, counter, barang, qty, person,status },
+    data: { tgl_keluar, counter,divisi, barang, qty, person,status },
     headers: { "X-CSRFToken": token },
     success: (e) => {
       modalAdd.hide();
@@ -624,9 +632,11 @@ $("#addPengeluaran").click(function (e) {
       const qty = $("#qtyAdd").val("0");
       selectPerson = false
       getTPengeluaran();
+      $(".msg span").remove()
     },
     error:(err) => {
       if(err.responseJSON){
+        $(".msg span").remove()
         $(".msg").append(`
           <span class="alert alert-danger">${err.responseJSON?.message}!</span>
         `);
@@ -654,9 +664,11 @@ $("#editTPengeluaran").click(function (e) {
       selectPersonTEdit = false
       modalTEdit.hide();
       tableT.ajax.reload();
+      $(".msg span").remove()
     },
     error:(err) => {
       if(err.responseJSON){
+        $(".msg span").remove()
         $(".msg").append(`
           <span class="alert alert-danger">${err.responseJSON?.message}!</span>
         `);
@@ -692,11 +704,12 @@ const postAjax = (id) => {
       tableT.ajax.reload();
       posting.hide();
       getTPengeluaran();
+      $("#msg div").remove();
     },
     error: (err) => {
       table.ajax.reload();
       tableT.ajax.reload();
-      $("#msg").html("");
+      $("#msg div").remove();
       err.responseJSON.message.slice(0, 1).forEach((e) => {
         $("#msg").append(`<li class="alert alert-danger">${e}</li>`);
       });

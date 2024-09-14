@@ -11,7 +11,7 @@
     </div>
 
   </div>
-  <table class="tableLaporan table" id="tableLaporan" style="width:100%"> 
+  <table class="tableLaporan table table-striped" id="tableLaporan" style="width:100%"> 
     {% csrf_token %}
     <thead>
       <tr>
@@ -32,5 +32,5 @@
 </div>
 {% endblock isi %}
 {% block js %}
-<script src="{% static "js/laporan.js" %}"></script>
+<script src="{% static "js/laporan.js" %}?23987"></script>
 {% endblock js %}

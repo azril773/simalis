@@ -6,7 +6,7 @@
     <button href="" class="btn btn-primary" id="buttonAddModal" data-bs-toggle="modal" data-bs-target="#addModalPerson">Add Person</button>
 </div>
 <div class="w-full overflow-x-auto">
-    <table id="personTable" class="table">
+    <table id="personTable" class="table table-striped">
         {% csrf_token %}
         <thead>
             <tr>
@@ -33,7 +33,11 @@
                     <select name="counterAdd" class="normalize" id="counterAdd">
                         <option value="">Select Counter</option>
                         {% for c in counter %}
+                        {% if c.status == "DE" %}
+                            <option value="{{c.pk}}">{{c.counter_bagian}} (<b class="text-danger" style="text-color: #AA4A44;">Deactive</b>)</option>
+                        {% else %}
                             <option value="{{c.pk}}">{{c.counter_bagian}}</option>
+                        {% endif %}
                         {% endfor %}
                     </select>
                 </div>
@@ -63,7 +67,11 @@
                     <select name="counterEdit" class="normalize" id="counterEdit">
                         <option value="">Select Counter</option>
                         {% for c in counter %}
-                        <option value="{{c.pk}}">{{c.counter_bagian}}</option>
+                        {% if c.status == "DE" %}
+                            <option value="{{c.pk}}">{{c.counter_bagian}} (<b class="text-danger" style="text-color: #AA4A44;">Deactive</b>)</option>
+                        {% else %}
+                            <option value="{{c.pk}}">{{c.counter_bagian}}</option>
+                        {% endif %}
                         {% endfor %}
                     </select>
                 </div>
@@ -72,7 +80,7 @@
                     <select name="statusEdit" class="normalize" id="statusEdit">
                         <option value="">Select Status</option>
                         <option value="AC">Active</option>
-                        <option value="DC">Deactive</option>
+                        <option value="DE">Deactive</option>
                     </select>
                 </div>
                 <div class="mb-3">
@@ -90,5 +98,5 @@
 </div>
 {% endblock isi %}
 {% block js %}
-<script src="{% static "js/person.js" %}"></script>
+<script src="{% static "js/person.js" %}?0164687"></script>
 {% endblock js %}

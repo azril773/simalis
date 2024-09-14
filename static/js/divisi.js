@@ -32,7 +32,6 @@ const divisiTabel = new DataTable("#divisiTable", {
 });
 
 const selectStatusEdit = $("#statusEdit").selectize({
-  maxOptions: 5,
 });
 // if id #addModalCounter show event
 $("#addModalDivisi").on("show.bs.modal", function (e) {
@@ -94,9 +93,11 @@ $("#buttonAddDivisi").click(function (e) {
     success: (e) => {
       divisiTabel.ajax.reload();
       addModal.hide();
+      $("#msg div").remove()
     },
     error: (e) => {
       console.log(e)
+      $("#msg div").remove()
       $("#msg").append(
         `<div class="alert alert-danger">${e.responseJSON.message}!</div>`
       );
@@ -118,8 +119,10 @@ $("#buttonEditDivisi").click(function (e) {
     success: (e) => {
       divisiTabel.ajax.reload();
       editModal.hide();
+      $("#msg div").remove()
     },
     error: (e) => {
+      $("#msg div").remove()
       $("#msg").append(
         `<div class="alert alert-danger">${e.responseJSON.message}!</div>`
       );

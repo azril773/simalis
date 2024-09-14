@@ -9,7 +9,7 @@
   <button href="" class="btn btn-primary" id="buttonAddModal" data-bs-toggle="modal" data-bs-target="#addModalKategori">Add Kategori</button>
 </div>
 <div class="w-full overflow-x-auto">
-  <table id="kategoriTable" class="cell-border table">
+  <table id="kategoriTable" class="cell-border table table-striped">
     {% csrf_token %}
     <thead>
       <tr>
@@ -39,7 +39,7 @@
                         <select class="normalize" id="statusAdd" name="status" required>
                             <option value="">Select Status</option>
                             <option value="AC">Active</option>
-                            <option value="DC">Deactive</option>
+                            <option value="DE">Deactive</option>
                         </select>
                     </div>
             </div>
@@ -68,7 +68,7 @@
             <select class="normalize" id="statusEdit" name="status" required>
               <option value="">Select Status</option>
               <option value="AC">Active</option>
-              <option value="DC">Deactive</option>
+              <option value="DE">Deactive</option>
             </select>
           </div>
           <input type="hidden" name="idEdit" id="idEdit">

@@ -9,9 +9,9 @@
       <button id="searchPembelian" class="btn btn-primary" style="margin-top:30px">Cari</button>
   </div>
 </div>
-<div class="mb-10">
+<div class="mb-10 col-12">
   <div class="overflow-x-auto" style="width: 100%;">
-    <table class="cell-border table" id="pembelian" style="width: 100%;">
+    <table class="cell-border table table-striped" id="pembelian" style="width: 100%;">
         {% csrf_token %}
         <thead>
           <tr>
@@ -48,7 +48,7 @@
 </div>
 <div class="mb-10">
   <div class="overflow-x-auto" style="width: 100%;">
-    <table class="cell-border  table" id="pengeluaran" style="width: 100%;">
+    <table class="cell-border  table table-striped" id="pengeluaran" style="width: 100%;">
         {% csrf_token %}
         <thead>
           <tr>
@@ -96,5 +96,5 @@
 
 {% endblock isi %}
 {% block js %}
-    <script src="{% static "js/general_report.js" %}"></script>
+    <script src="{% static "js/general_report.js" %}?23237987"></script>
 {% endblock js %}

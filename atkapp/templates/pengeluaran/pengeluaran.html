@@ -20,7 +20,7 @@
   </div>
 </div>
 <div class="w-full overflow-x-auto">
-  <table class="tablePengeluaran cell-border table" style="width: 100%;">
+  <table class="tablePengeluaran table table-striped" style="width: 100%;">
    {% csrf_token %}
    <thead>
        <tr>
@@ -62,7 +62,11 @@
             <select class="normalize editSelectBarang" required id="barangEdit" name="barang" aria-label="Default select example">
               <option selected value="">Open this select menu</option>
               {% for b in barang %}
-               <option value="{{b.pk}}">{{b.barang}}</option>
+              {% if b.status == "DE" %}
+                <option value="{{b.pk}}">{{b.barang}} (Deactive)</option>
+              {% else %}
+                <option value="{{b.pk}}">{{b.barang}}</option>
+              {% endif %}
               {% endfor %}
             </select>
           </div>
@@ -81,7 +85,11 @@
             <select class="normalize editSelect" required id="counterEdit" name="counter" aria-label="Default select example">
               <option selected value="">Open this select menu</option>
               {% for b in counter %}
-               <option value="{{b.pk}}">{{b.counter_bagian}}</option>
+              {% if b.status == "DE" %}
+                <option value="{{b.pk}}">{{b.counter_bagian}} (Deactive)</option>
+              {% else %}
+                <option value="{{b.pk}}">{{b.counter_bagian}}</option>
+              {% endif %}
               {% endfor %}
             </select>
             </span>
@@ -91,7 +99,11 @@
             <select class="normalize editSelect" required id="personEdit" name="person" aria-label="Default select example">
               <option selected value="">Open this select menu</option>
               {% for b in person %}
-               <option value="{{b.pk}}">{{b.nama}}</option>
+              {% if b.status == "DE" %}
+                <option value="{{b.pk}}">{{b.nama}} (Deactive)</option>
+              {% else %}
+                <option value="{{b.pk}}">{{b.nama}}</option>
+              {% endif %}
               {% endfor %}
             </select>
             </span>
@@ -144,7 +156,11 @@
             <select class="normalize" required id="barangTEdit" name="barang" aria-label="Default select example">
               <option selected  value="">Open this select menu</option>
               {% for b in barang %}
-               <option value="{{b.pk}}">{{b.barang}}</option>
+              {% if b.status == "DE" %}
+                <option value="{{b.pk}}">{{b.barang}} (Deactive)</option>
+              {% else %}
+                <option value="{{b.pk}}">{{b.barang}}</option>
+              {% endif %}
               {% endfor %}
             </select>
           </div>
@@ -162,7 +178,11 @@
             <select class="normalize" required id="counterTEdit" name="counter" aria-label="Default select example">
               <option selected value="">Open this select menu</option>
               {% for b in counter %}
-               <option value="{{b.pk}}">{{b.counter_bagian}}</option>
+              {% if b.status == "DE" %}
+                <option value="{{b.pk}}">{{b.counter_bagian}} (Deactive)</option>
+              {% else %}
+                <option value="{{b.pk}}">{{b.counter_bagian}}</option>
+              {% endif %}
               {% endfor %}
             </select>
           </div>
@@ -171,7 +191,11 @@
             <select class="normalize" required id="personTEdit" name="person" aria-label="Default select example">
               <option selected value="">Open this select menu</option>
               {% for b in person %}
-               <option value="{{b.pk}}">{{b.nama}}</option>
+              {% if b.status == "DE" %}
+                <option value="{{b.pk}}">{{b.nama}} (Deactive)</option>
+              {% else %}
+                <option value="{{b.pk}}">{{b.nama}}</option>
+              {% endif %}
               {% endfor %}
             </select>
           </div>
@@ -216,7 +240,11 @@
             <select class="normalize" required id="barangAdd" name="barang" aria-label="Default select example">
               <option selected  value="">Open this select menu</option>
               {% for b in barang %}
-               <option value="{{b.pk}}">{{b.barang}}</option>
+              {% if b.status == "DE" %}
+                <option value="{{b.pk}}">{{b.barang}} (Deactive)</option>
+              {% else %}
+                <option value="{{b.pk}}">{{b.barang}}</option>
+              {% endif %}
               {% endfor %}
             </select>
           </div>
@@ -234,7 +262,11 @@
             <select class="normalize AddSelect" required id="counterAdd" name="counter" aria-label="Default select example">
               <option selected value="">Open this select menu</option>
               {% for b in counter %}
-               <option value="{{b.pk}}">{{b.counter_bagian}}</option>
+              {% if b.status == "DE" %}
+                <option value="{{b.pk}}">{{b.counter_bagian}} (Deactive)</option>
+              {% else %}
+                <option value="{{b.pk}}">{{b.counter_bagian}}</option>
+              {% endif %}
               {% endfor %}
             </select>
           </div>
@@ -243,7 +275,11 @@
             <select class="normalize AddSelect" required id="personAdd" name="person" aria-label="Default select example">
               <option selected value="">Open this select menu</option>
               {% for b in person %}
-               <option value="{{b.pk}}">{{b.nama}}</option>
+              {% if b.status == "DE" %}
+                <option value="{{b.pk}}">{{b.nama}} (Deactive)</option>
+              {% else %}
+                <option value="{{b.pk}}">{{b.nama}}</option>
+              {% endif %}
               {% endfor %}
             </select>
           </div>
@@ -284,7 +320,7 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <table class="tableTPengeluaran cell-border table" id="tableTPengeluaran" style="width: 100%;">
+          <table class="tableTPengeluaran table-striped table" id="tableTPengeluaran" style="width: 100%;">
             <thead>
                 <tr>
                     <th>Select</th>
@@ -316,5 +352,5 @@
 
    {% endblock isi %}
    {% block js %}
-        <script src="{% static "js/tablepengeluaran.js" %}"></script>
+        <script src="{% static "js/tablepengeluaran.js" %}?454545"></script>
     {% endblock js %}

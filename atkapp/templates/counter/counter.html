@@ -1,11 +1,12 @@
 {% extends "../template/base.html" %}
 {% load static %}
 {% block isi %}
+<p id="msg"></p>
 <div class="w-full flex justify-end gap-3">
     <button href="" class="btn btn-primary" id="buttonAddModal" data-bs-toggle="modal" data-bs-target="#addModalCounter">Add Counter</button>
 </div>
 <div class="w-full overflow-x-auto">
-    <table id="counterTable" class="table">
+    <table id="counterTable" class="table table-striped">
         {% csrf_token %}
         <thead>
             <tr>
@@ -62,7 +63,7 @@
                     <select name="statusEdit" class="normalize" id="statusEdit">
                         <option value="">Select Status</option>
                         <option value="AC">Active</option>
-                        <option value="DC">Deactive</option>
+                        <option value="DE">Deactive</option>
                     </select>
                 </div>
                 <div class="mb-3">
@@ -90,5 +91,5 @@
 
 {% endblock isi %}
 {% block js %}
-<script src="{% static "js/counter.js" %}"></script>
+<script src="{% static "js/counter.js" %}?568945053654"></script>
 {% endblock js %}

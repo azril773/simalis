@@ -125,6 +125,13 @@ const table = new DataTable(".tablePembelian", {
       },
     },
   ],
+
+  destroy: true,
+  ordering: false,
+  paging: false,
+  scrollX:"100%",
+  scrollY: 300,
+  processing: true,
 });
 
 table.on("xhr", () => {
@@ -311,7 +318,7 @@ $("#qtyAdd")
 
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-const tableT = new DataTable(".tableTPembelian", {
+const tableTPembelian = new DataTable(".tableTPembelian", {
   order: [[1, "desc"]],
   ajax: {
     url: `/atk/getTPembelian/`,
@@ -390,6 +397,7 @@ const tableT = new DataTable(".tableTPembelian", {
       },
     },
   ],
+
 });
 
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -420,7 +428,7 @@ $("#addPembelian").on("click", function (e) {
       const qty = $("#qtyAdd").val("0");
       $("#hargaAdd").val("0")
       barangTAddSelectize[0].selectize.clear();
-      tableT.ajax.reload();
+      tableTPembelian.ajax.reload();
       modalAddT.hide();
       getTPembelian();
     },
@@ -436,7 +444,7 @@ $("#addPembelian").on("click", function (e) {
   });
 });
 
-tableT.on("click", "tbody tr", async (e) => {
+tableTPembelian.on("click", "tbody tr", async (e) => {
   // if($(e.target).is("td>span>a.deleteTButton")){
   //   console.log()
   // }
@@ -478,7 +486,7 @@ const postAjax = (id) => {
     headers: { "X-CSRFToken": token },
     success: (e) => {
       table.ajax.reload();
-      tableT.ajax.reload();
+      tableTPembelian.ajax.reload();
       posting.hide();
     },
     error: (err) => {
@@ -499,7 +507,7 @@ const postAjax = (id) => {
 
 getTPembelian();
 
-tableT.on("click", "tbody tr", async function (e) {
+tableTPembelian.on("click", "tbody tr", async function (e) {
   const id = $(e.target).attr("data-id");
   if ($(e.target).is("td>span>button.editModalTButton")) {
     modalEditT.show();
@@ -560,7 +568,7 @@ tableT.on("click", "tbody tr", async function (e) {
       data: { id },
       headers: { "X-CSRFToken": token },
       success: (e) => {
-        tableT.ajax.reload();
+        tableTPembelian.ajax.reload();
         getTPembelian();
       },
     });
@@ -583,7 +591,7 @@ $("#editTPembelian").click(function () {
       // modalEdit.hide()
       posting.show();
       modalEditT.hide();
-      tableT.ajax.reload();
+      tableTPembelian.ajax.reload();
     },
     error: (err) => {
       if (err.responseJSON) {

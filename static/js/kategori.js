@@ -100,8 +100,10 @@ $("#buttonAddKategori").click(function (e) {
     success: (e) => {
       kategoriTabel.ajax.reload();
       addModal.hide();
+      $("#msg div").remove()
     },
     error: (e) => {
+      $("#msg div").remove()
       $("#msg").append(
         `<div class="alert alert-danger">${e.responseJSON.message}!</div>`
       );
@@ -123,8 +125,10 @@ $("#buttonEditKategori").click(function (e) {
     success: (e) => {
       kategoriTabel.ajax.reload();
       editModal.hide();
+      $("#msg div").remove()
     },
     error: (e) => {
+      $("#msg div").remove()
       $("#msg").append(
         `<div class="alert alert-danger">${e.responseJSON.message}!</div>`
       );

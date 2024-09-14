@@ -33,7 +33,6 @@ const counterTabel = new DataTable("#counterTable", {
 });
 
 const selectStatusEdit = $("#statusEdit").selectize({
-  maxOptions: 5,
 });
 
 const divisiAddSelectize = $("#divisiAdd").selectize({
@@ -108,9 +107,11 @@ $("#buttonAddCounter").click(function (e) {
     success: (e) => {
       counterTabel.ajax.reload();
       addModal.hide();
+      $("#msg div").remove()
     },
     error: (e) => {
       console.log(e)
+      $("#msg div").remove()
       $("#msg").append(
         `<div class="alert alert-danger">${e.responseJSON.message}!</div>`
       );
@@ -133,8 +134,10 @@ $("#buttonEditCounter").click(function (e) {
     success: (e) => {
       counterTabel.ajax.reload();
       editModal.hide();
+      $("#msg div").remove()
     },
     error: (e) => {
+      $("#msg div").remove()
       $("#msg").append(
         `<div class="alert alert-danger">${e.responseJSON.message}!</div>`
       );

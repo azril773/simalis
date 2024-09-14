@@ -31,7 +31,7 @@
   </div>
 </div>
 <div class="w-full overflow-x-auto">
-  <table class="tablePembelian cell-border table" style="width: 100%;">
+  <table class="tablePembelian table table-striped" style="width: 100%;">
    {% csrf_token %}
    <thead>
        <tr>
@@ -69,7 +69,7 @@
             <select class="normalize editSelect" required id="barangEdit" name="barang" aria-label="Default select example">
               <option selected value="">Open this select menu</option>
               {% for b in data %}
-               <option value="{{b.pk}}" data-harga={{b.harga}}>{{b.barang}}</option>
+              <option value="{{b.pk}}" data-harga={{b.harga}}>{{b.barang}}</option>
               {% endfor %}
             </select>
           </div>
@@ -112,7 +112,7 @@
             <select class="normalize" focus="true" data-live-search="true" required id="barangAdd" name="barang">
               <option selected  value="">Open this select menu</option>
               {% for b in data %}
-               <option value="{{b.pk}}" data-harga={{b.harga}}>{{b.barang}}</option>
+                <option value="{{b.pk}}" data-harga={{b.harga}}>{{b.barang}}</option>
               {% endfor %}
             </select>
           </div>
@@ -155,7 +155,7 @@
             <select class="normalize editSelect" required id="barangTEdit" name="barang" aria-label="Default select example">
               <option selected value="">Open this select menu</option>
               {% for b in data %}
-               <option value="{{b.pk}}" data-harga={{b.harga}}>{{b.barang}}</option>
+              <option value="{{b.pk}}" data-harga={{b.harga}}>{{b.barang}}</option>
               {% endfor %}
             </select>
           </div>
@@ -217,5 +217,5 @@
   
    {% endblock isi %}
    {% block js %}
-    <script src="{% static "js/tablepembelian.js" %}"></script>
+    <script src="{% static "js/tablepembelian.js" %}?4545"></script>
   {% endblock js %}

@@ -12,12 +12,12 @@
         <div class="row d-flex justify-content-between">
             <h2>Perincian Pengeluaran Divisi Berbayar / Potong Faktur</h2>
             <div class="col-12 mx-1 mb-5">
-                <table class="" border='1' cellspacing="0" cellpadding="0">
+                <table class="tprint" border='1' cellspacing="0" cellpadding="0">
                       <thead>
                         <tr>
-                            <th>Divisi</th>
-                            <th>Tipe Pembayaran</th>
-                            <th>Sub Total</th>
+                            <th class="hprint">Divisi</th>
+                            <th class="hprint">Tipe Pembayaran</th>
+                            <th class="hprint">Sub Total</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -25,22 +25,22 @@
                         {% for tipe in bd.tipe %}
                         {% if forloop.counter0 > 0 %}
                         <tr>
-                            <td style="text-transform:capitalize;"><code class='format-text'>{{tipe.tipe_pembayaran}}</code></td>
-                            <td text-align='right'><code class='format-text'>Rp {{tipe.total}}</code></td>
+                            <td class="dprint" style="text-transform:capitalize;"><code class='format-text'>{{tipe.tipe_pembayaran}}</code></td>
+                            <td class+"dprint" text-align='right'><code class='format-text'>Rp {{tipe.total}}</code></td>
                         </tr>
                         {% else %}
                         <tr>
-                            <td rowspan='2' style="font-size:12px"><code class='format-text'>{{bd.divisi}}</code></td>
-                            <td style="text-transform:capitalize;"><code class='format-text'>{{tipe.tipe_pembayaran}}</code></td>
-                            <td text-align='right'><code class='format-text'>Rp {{tipe.total}}</code></td>
+                            <td class="dprint" rowspan='2' style="font-size:12px"><code class='format-text'>{{bd.divisi}}</code></td>
+                            <td class="dprint" style="text-transform:capitalize;"><code class='format-text'>{{tipe.tipe_pembayaran}}</code></td>
+                            <td class="dprint" text-align='right'><code class='format-text'>Rp {{tipe.total}}</code></td>
                         </tr>
                         {% endif %}
                         {% endfor %}
                         {% endfor %}
                     </tbody>
                     <tfoot>
-                        <th colspan='2'>Total</th>
-                        <th><code class='format-text'>Rp {{totalDivisi}}</code></th>
+                        <th class="hprint" colspan='2'>Total</th>
+                        <th class="hprint"><code class='format-text'>Rp {{totalDivisi}}</code></th>
                     </tfoot>
                 </table>
             </div>
@@ -48,24 +48,24 @@
         <div class="row d-flex justify-content-center">
             <h2>Perincian Pengeluaran Divisi Non Bayar</h2>
             <div class="col-12"> 
-                <table class="" cellspacing="0" cellpadding="0">
+                <table class="tprint" cellspacing="0" cellpadding="0">
                     <thead>
                         <tr>
-                            <th>Divisi</th>
-                            <th>Sub Total</th>
+                            <th class="hprint">Divisi</th>
+                            <th class="hprint">Sub Total</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for bc in bydivisiNon %}
                         <tr>
-                            <td><code class='format-text'>{{bc.divisi}}</code></td>
-                            <td text-align='right'><code class='format-text'>Rp {{bc.total}}</code></td>
+                            <td class="dprint"><code class='format-text'>{{bc.divisi}}</code></td>
+                            <td class="dprint" text-align='right'><code class='format-text'>Rp {{bc.total}}</code></td>
                         </tr>
                         {% endfor %}
                     </tbody>
                     <tfoot>
-                        <th>Total</th>
-                        <th text-align='right'><code class='format-text'>Rp {{totalDivisiNon}}</code></th>
+                        <th class="hprint">Total</th>
+                        <th class="hprint" text-align='right'><code class='format-text'>Rp {{totalDivisiNon}}</code></th>
                     </tfoot>
                 </table>
             </div>
@@ -73,24 +73,24 @@
         <div class="row d-flex justify-content-center">
             <div class="col-12 mt-5">
                 <h2>Pembelian</h2>
-                <table class="" cellspacing="0" cellpadding="0">
+                <table class="tprint" cellspacing="0" cellpadding="0">
                     <thead>
                         <tr>
-                            <th>Kategori</th>
-                            <th>Sub Total</th>
+                            <th class="hprint">Kategori</th>
+                            <th class="hprint">Sub Total</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for p in pembelian %}
                         <tr>
-                            <td><code class='format-text'>{{p.kategori}}</code></td>
+                            <td class="dprint"><code class='format-text'>{{p.kategori}}</code></td>
                             <td text-align='right'><code class='format-text'>Rp {{p.total}}</code></td>
                         </tr>
                         {% endfor %}
                     </tbody>
                     <tfoot>
-                        <th>Total</th>
-                        <th text-align='right'><code class='format-text'>Rp {{totalPembelian}}</code></th>
+                        <th class="hprint">Total</th>
+                        <th class="hprint" text-align='right'><code class='format-text'>Rp {{totalPembelian}}</code></th>
                     </tfoot>
                 </table>
             </div>
@@ -98,12 +98,12 @@
         <div class="row d-flex justify-content-center">
             <div class="col-12 mt-5">
                 <h2>Pengeluaran Barang</h2>
-                <table class="" cellspacing="0" cellpadding="0">
+                <table class="tprint" cellspacing="0" cellpadding="0">
                     <thead>
                         <tr>
-                            <th>Barang</th>
-                            <th>Tipe Pembayaran</th>
-                            <th>Sub Total</th>
+                            <th class="hprint">Barang</th>
+                            <th class="hprint">Tipe Pembayaran</th>
+                            <th class="hprint">Sub Total</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -111,39 +111,39 @@
                             {% for d in p.data %}
                                 {% if forloop.counter0 > 0 %}
                                     <tr>
-                                        <td><code class='format-text'>{{d.tipe}}</code></td>
-                                        <td text-align='right'><code class='format-text'>Rp {{d.total}}</code></td>
+                                        <td class="dprint"><code class='format-text'>{{d.tipe}}</code></td>
+                                        <td class="dprint" text-align='right'><code class='format-text'>Rp {{d.total}}</code></td>
                                     </tr>
                                 {% else %}
                                 <tr>
-                                    <td rowspan="3"><code class='format-text'>{{p.barang}}</code></td>
-                                    <td><code class='format-text'>{{d.tipe}}</code></td>
-                                    <td text-align='right'><code class='format-text'>Rp {{d.total}}</code></td>
+                                    <td class="dprint" rowspan="3"><code class='format-text'>{{p.barang}}</code></td>
+                                    <td class="dprint"><code class='format-text'>{{d.tipe}}</code></td>
+                                    <td class="dprint" text-align='right'><code class='format-text'>Rp {{d.total}}</code></td>
                                 </tr>
                                 {% endif %}
                             {% endfor %}
                         {% endfor %}
                     </tbody>
                     <tfoot>
-                        <th colspan="2">Total</th>
-                        <th text-align='right'><code class='format-text'>Rp {{totalPengeluaran}}</code></th>
+                        <th class="hprint" colspan="2">Total</th>
+                        <th class="hprint" text-align='right'><code class='format-text'>Rp {{totalPengeluaran}}</code></th>
                     </tfoot>
                 </table>
             </div>
         </div>
         {% comment %} <div class="row d-flex justify-content-center">
             <div class="col-12">
-                <table class="">
+                <table class="tprint">
                     <thead>
                         <tr>
-                            <th></th>
-                            <th></th>
+                            <th class="hprint"></th>
+                            <th class="hprint"></th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td></td>
-                            <td></td>
+                            <td class="dprint"></td>
+                            <td class="dprint"></td>
                         </tr>
                     </tbody>
                 </table>
@@ -160,26 +160,26 @@
         {% for c in d.counter %}
         <div class="col-3 mt-2 mx-3">
             <strong class='ml-2'>{{c.counter_bagian}}</strong>
-            <table class='' style='width: 100%;' cellspacing="0" cellpadding="0">
+            <table class='tprint' style='width: 100%;' cellspacing="0" cellpadding="0">
                 <thead>
                     <tr>
-                        <th>Jenis Barang</th>
-                        <th>Jumlah</th>
-                        <th>Sub Total</th>
+                        <th class="hprint">Jenis Barang</th>
+                        <th class="hprint">Jumlah</th>
+                        <th class="hprint">Sub Total</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for brg in c.barang %}
                     <tr>
-                        <td><code class='format-text'>{{brg.barang}}</code></td>
-                        <td><code class='format-text'>{{brg.qty}}</code></td>
-                        <td style=""><code class='format-text'>Rp {{brg.total}}</code></td>
+                        <td class="dprint"><code class='format-text'>{{brg.barang}}</code></td>
+                        <td class="dprint"><code class='format-text'>{{brg.qty}}</code></td>
+                        <td class="dprint" style=""><code class='format-text'>Rp {{brg.total}}</code></td>
                     </tr>
                     {% endfor %}
                 </tbody>
                 <tfoot>
-                    <th colspan='2'>Total</th>
-                    <th colspan='1'><code class='format-text'>Rp {{c.subTotal}}</code></th>
+                    <th class="hprint" colspan='2'>Total</th>
+                    <th class="hprint" colspan='1'><code class='format-text'>Rp {{c.subTotal}}</code></th>
                 </tfoot>
             </table>
         </div>

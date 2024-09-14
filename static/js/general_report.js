@@ -1,6 +1,20 @@
 const token = document.querySelector("[name=csrfmiddlewaretoken]").value;
-new DataTable("#pembelian");
-new DataTable("#pengeluaran");
+new DataTable("#pembelian",{
+  destroy: true,
+  ordering: false,
+  paging: false,
+  scrollX:"100%",
+  scrollY: 300,
+  processing: true,
+});
+new DataTable("#pengeluaran",{
+  destroy: true,
+  ordering: false,
+  paging: false,
+  scrollX:"100%",
+  scrollY: 300,
+  processing: true,
+});
 localStorage.removeItem("printPengeluaran");
 localStorage.removeItem("printPembelian");
 $("#dateRangePembelian").daterangepicker();
@@ -118,6 +132,12 @@ $("#searchPengeluaran").on("click", (e) => {
           },
         },
       ],
+      destroy: true,
+      ordering: false,
+      paging: false,
+      scrollX:"100%",
+      scrollY: 300,
+      processing: true,
     });
     newTable.on("xhr", function (e, type, json, xhr) {
       json.data.forEach((e) => {
@@ -239,23 +259,26 @@ $("#searchPembelian").on("click", function (e) {
     ],
     footerCallback: function (tfoot, data, start, end, display) {
       let api = this.api();
-      const page = api
-        .column(5, { page: "current" })
-        .data()
-        .reduce((a, b) => parseInt(a) + parseInt(b), 0);
+    //   const page = api
+    //     .column(5, { page: "current" })
+    //     .data()
+    //     .reduce((a, b) => parseInt(a) + parseInt(b), 0);
       const total = api
         .column(5)
         .data()
         .reduce((a, b) => parseInt(a) + parseInt(b), 0);
-      api.column(5).footer().innerHTML = `${page.toLocaleString("id-ID", {
+      api.column(5).footer().innerHTML = `${total.toLocaleString("id-ID", {
         currency: "IDR",
         style: "currency",
-      })} (${total.toLocaleString("id-ID", {
-        currency: "IDR",
-        style: "currency",
-      })} Total)`;
-      // .innerHTML = "Total"
+      })} `;
+    //   // .innerHTML = "Total"
     },
+    destroy: true,
+    ordering: false,
+    paging: false,
+    scrollX:"100%",
+    scrollY: 300,
+    processing: true,
   });
 
   newTable.on("xhr", (data, type, json, xhr) => {

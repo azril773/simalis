@@ -16,7 +16,7 @@
       {% endfor %}
     {% endif %}
 <div class="">
-  <table class="tableBarang table cell-border" style="width: 100%;">
+  <table class="tableBarang table table-striped" style="width: 100%;">
    {% csrf_token %}
    <thead>
        <tr>
@@ -89,9 +89,6 @@
           <label for="kategoriEdit">Kategori</label>
           <select class="normalize mt-1 mb-3" id="kategoriEdit" name="kategoriEdit" aria-label="Default select example">
             <option selected value="">Open this select menu</option>
-            <option value="1">coba</option>
-            <option value="1">coba</option>
-            <option value="1">coba</option>
             {% for k in kategori %}
               <option value="{{k.pk}}">{{ k.kategori }}</option>
             {% endfor %}

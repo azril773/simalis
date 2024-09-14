@@ -5,7 +5,7 @@
     <button href="" class="btn btn-primary" id="buttonAddModal" data-bs-toggle="modal" data-bs-target="#addModalDivisi">Add Divisi</button>
 </div>
 <div class="w-full overflow-x-auto">
-    <table id="divisiTable" class="table">
+    <table id="divisiTable" class="table table-striped">
         {% csrf_token %}
         <thead>
             <tr>
@@ -52,7 +52,7 @@
                     <select name="statusEdit" class="normalize" id="statusEdit">
                         <option value="">Select Status</option>
                         <option value="AC">Active</option>
-                        <option value="DC">Deactive</option>
+                        <option value="DE">Deactive</option>
                     </select>
                 </div>
                 <div class="mb-3">
@@ -71,5 +71,5 @@
 
 {% endblock isi %}
 {% block js %}
-<script src="{% static "js/divisi.js" %}"></script>
+<script src="{% static "js/divisi.js" %}?376870"></script>
 {% endblock js %}

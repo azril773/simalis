@@ -42,16 +42,16 @@ const personTabel = new DataTable("#personTable", {
 });
 
 const selectCounterEdit = $("#counterEdit").selectize({
-    maxOptions: 5,
+    
     onChange: changeCounterEdit
 });
 const selectCounterAdd = $("#counterAdd").selectize({
-    maxOptions: 5,
+    
     onChange: changeCounterAdd
 });
 
 const selectStatusEdit = $("#statusEdit").selectize({
-    maxOptions:5
+    
 })
 function changeCounterAdd(val) {
     $("#personAdd").focus()
@@ -127,6 +127,7 @@ $("#buttonAddPerson").click(function (e) {
       addModal.hide();
     },
     error: (e) => {
+      $("#msg div").remove()
       $("#msg").append(
         `<div class="alert alert-danger">${e.responseJSON.message}!</div>`
       );
@@ -152,6 +153,7 @@ $("#buttonEditPerson").click(function (e) {
       editModal.hide();
     },
     error: (e) => {
+      $("#msg div").remove()
       $("#msg").append(
         `<div class="alert alert-danger">${e.responseJSON.message}!</div>`
       );

@@ -11751,12 +11751,12 @@ fieldset:disabled .btn {
   }
 }
 
-  table {
+  .tprint {
     width: 100%;
     border-collapse: collapse !important;
   }
 
-  th, td {
+  .hprint, .dprint {
     padding: 2px;
     margin: 0 ;
     border: 1px solid black !important;
