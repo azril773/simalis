@@ -34,8 +34,15 @@ def middleware(r):
             r.session["cabang"] = p.name
             r.session["codename"] = p.codename
             r.session["database"] = "atk_"+p.codename
-            login(r,user)
-            return redirect("/atk/")
+            userz = authenticate(username=r.POST.get("username"),password=r.POST.get("password"))
+            print(userz)
+            print(user.password,'CPsjdsdhsjh')
+            if userz is not None:
+                login(r,user)
+                return redirect("/atk/")
+            else:
+                logout(r)
+                return redirect("/")
     messages.add_message(r,messages.ERROR,"Anda tidak memiliki akses")
     return redirect('/')
         
