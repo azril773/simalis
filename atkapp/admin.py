@@ -6,46 +6,6 @@ from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
 from .models import *
 
-# class Kategori(admin.ModelAdmin):
-#     def has_add_permission(self, request: HttpRequest) -> bool:
-#         return super().has_add_permission(request)
-    
-#     def has_change_permission(self, request: HttpRequest, obj: any = None) -> bool:
-#         return super().has_change_permission(request, obj)
-
-#     def has_delete_permission(self, request: HttpRequest, obj: any = None) -> bool:
-#         return super().has_delete_permission(request, obj)
-
-
-# class Counter_bagian(admin.ModelAdmin):
-#     def has_add_permission(self, request: HttpRequest) -> bool:
-#         return super().has_add_permission(request)
-    
-#     def has_change_permission(self, request: HttpRequest, obj: any = None) -> bool:
-#         return super().has_change_permission(request, obj)
-
-#     def has_delete_permission(self, request: HttpRequest, obj: any = None) -> bool:
-#         return super().has_delete_permission(request, obj)
-
-# class Personal(admin.ModelAdmin):
-#     def has_add_permission(self, request: HttpRequest) -> bool:
-#         return super().has_add_permission(request)
-    
-#     def has_change_permission(self, request: HttpRequest, obj: any = None) -> bool:
-#         return super().has_change_permission(request, obj)
-
-#     def has_delete_permission(self, request: HttpRequest, obj: any = None) -> bool:
-#         return super().has_delete_permission(request, obj)
-    
-# class Stok_brg(admin.ModelAdmin):
-#     def has_add_permission(self, request: HttpRequest) -> bool:
-#         return super().has_add_permission(request)
-    
-#     def has_change_permission(self, request: HttpRequest, obj: any = None) -> bool:
-#         return super().has_change_permission(request, obj)
-
-#     def has_delete_permission(self, request: HttpRequest, obj: any = None) -> bool:
-#         return super().has_delete_permission(request, obj)
 
 @admin.register(Master_barang)
 class master_barang(ImportExportModelAdmin):

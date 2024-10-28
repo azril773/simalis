@@ -63,6 +63,7 @@ urlpatterns = [
     path("editPengeluaran/",views.editPengeluaran,name="editPengeluaran"),
     path("getPengeluaranById/",views.getPengeluaranById,name="getPengeluaranById"),
     path("getPengeluaranRange/",views.getPengeluaranRange,name="getPengeluaranRange"),
+    path("delPengeluaran/<int:id>",views.delPengeluaran,name="delPengeluaran"),
     # PERSON
     path("getPersonById/",views.getPersonById,name="getPersonById"),
 

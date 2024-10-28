@@ -26,7 +26,7 @@
                         {% if forloop.counter0 > 0 %}
                         <tr>
                             <td class="dprint" style="text-transform:capitalize;"><code class='format-text'>{{tipe.tipe_pembayaran}}</code></td>
-                            <td class+"dprint" text-align='right'><code class='format-text'>Rp {{tipe.total}}</code></td>
+                            <td class="dprint" text-align='right'><code class='format-text'>Rp {{tipe.total}}</code></td>
                         </tr>
                         {% else %}
                         <tr>
@@ -84,7 +84,7 @@
                         {% for p in pembelian %}
                         <tr>
                             <td class="dprint"><code class='format-text'>{{p.kategori}}</code></td>
-                            <td text-align='right'><code class='format-text'>Rp {{p.total}}</code></td>
+                            <td text-align='right' class="dprint"><code class='format-text'>Rp {{p.total}}</code></td>
                         </tr>
                         {% endfor %}
                     </tbody>

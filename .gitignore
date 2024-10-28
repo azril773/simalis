@@ -48,6 +48,6 @@ Thumbs.db
 *.mov
 *.wmv
 
-atk/settings.py
-env
-atkapp/migrations/
+# atk/settings.py
+# env
+# atkapp/migrations/

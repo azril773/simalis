@@ -19,6 +19,9 @@ from django.http import StreamingHttpResponse
 from django.db import transaction,connections
 import weasyprint
 import calendar
+import time
+from django.db.models import Count
+
 import re
 from calendar import monthrange
 bulanArr = ['Januari','Februari','Maret',"April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"]
@@ -58,6 +61,12 @@ def getBarang(r):
 
 @login_required
 def barang(r):
+    stok = Pengeluaran.objects.using(r.session["database"]).all()
+    print("SOKDOKDS")
+    for s in stok:
+        p = Pengeluaran.objects.using(r.session["database"]).filter(tgl_keluar=s.tgl_keluar,master_barang_id_id=s.master_barang_id_id,qty=s.qty,divisi_id=s.divisi_id,counter_id_id=s.counter_id_id,status=s.status,harga_jual=s.harga_jual,personal_id_id=s.personal_id_id).aggregate(hitung=Count("id"))
+        if p["hitung"] > 1:
+            print(s.tgl_keluar,s.master_barang_id.barang)
     k = Kategori_brg.objects.using(r.session["database"]).all()
     cabang = r.session["cabang"].split(" ")[-1]
     tipe = r.session["cabang"].split(" ")[0:-1]
@@ -385,11 +394,15 @@ def pengeluaran(r):
     tipe = r.session["cabang"].split(" ")[0:-1]
     tipe = " ".join(tipe)
     cabangs = []
+    staff = r.user.is_staff
     for p in r.user.get_all_permissions():
         if re.search(r"cabang\..+",p,re.IGNORECASE):
             name = Permission.objects.get(codename=str(p).split(".")[1])
             cabangs.append({"codename":p.split(".")[1],"nama":name.name})
-    return render(r,"pengeluaran/pengeluaran.html",{"barang":barang,"person":prs,"counter":c,'divisi':d,'cabang':cabang,'cabangs':cabangs,'tipe':tipe})  
+    return render(r,"pengeluaran/pengeluaran.html",{"barang":barang,"person":prs,"counter":c,'divisi':d,'cabang':cabang,'cabangs':cabangs,'tipe':tipe,"staff":staff})  
+
+
+
 
 @login_required
 def tambahPengeluaran(r):
@@ -402,13 +415,13 @@ def tambahPengeluaran(r):
         status = r.POST.get("status")
 
         # get model
-        with transaction.atomic():
-            brg = Master_barang.objects.get(pk=barang)
+        with transaction.atomic() as e:
+            brg = Master_barang.objects.select_for_update().get(pk=barang)
             ctr = Counter_bagian.objects.get(pk=counter)
             prs = Personal.objects.get(pk=person) 
             stk = Stok_brg.objects.using(r.session["database"]).select_for_update().filter(master_barang_id=barang).last()
             stok = Stok_brg()
-
+            time.sleep(10)
             # update
             stok.tgl_transaksi = tgl_keluar
             stok.qty_keluar = qty
@@ -439,6 +452,7 @@ def tambahPengeluaran(r):
             pengeluaran.status = status
             pengeluaran.save(using=r.session["database"])
             stok.save(using=r.session["database"])
+        
 
             return JsonResponse({"message":"success create pembelian"},status=200,safe=False)
     else:
@@ -619,6 +633,12 @@ def getPengeluaranRange(r):
         data.append(obj)
     return JsonResponse({"data":data})
     
+
+@login_required
+def delPengeluaran(r,id):
+    Pengeluaran.objects.using(r.session["database"]).filter(pk=int(id)).delete()
+    return redirect("pengeluaran")
+
 @login_required
 def getPersonById(r):
     if r.method == 'POST':
@@ -990,75 +1010,82 @@ def getTPengeluaranById(r):
     seri = json.loads(seri)
     return JsonResponse({"data":seri[0]},status=200,safe=False)
 
+
 @login_required
 def tambahPostPengeluaran(r):
     id = r.POST.getlist("id[]")
     msg = []
-    for i in id:
-        tp = Temporary_pengeluaran.objects.using(r.session["database"]).get(pk=i)
-        try:
-            brg = Master_barang.objects.using(r.session["database"]).get(pk=tp.master_barang_id.pk,kategori_id__status="AC")
-            if brg.status == "DE":
-                msg.append("Barang sudah tidak aktif!")
-                continue
-        except:
-            msg.append("Kategori sudah tidak aktif!")
-            continue
-        stk = Stok_brg.objects.using(r.session["database"]).filter(master_barang_id=brg.pk).last()
-        if not stk:
-            msg.append(f"Stok tidak ada untuk <b>{brg.barang}</b>!")
-            continue
-        elif int(stk.stok) == 0:
-            msg.append(f"Stok tidak ada untuk <b>{brg.barang}</b>!")
-            continue
-        elif int(stk.stok) < int(tp.qty):
-            msg.append(f"Stok <b>{brg.barang}</b> hanya ada <b><i>{stk.stok}</b></i>!")
-            continue
-        
-
-        updateStok = int(stk.stok) - int(tp.qty)
-        if updateStok <= 0:
-            brg.status = "DE"
-        
-        prs = None
-        if not tp.personal_id:
-            prs = None
-        else:
+    print("OKSOKDO")
+    with transaction.atomic(using=r.session["database"]):
+        for i in id:
+            tp = Temporary_pengeluaran.objects.using(r.session["database"]).get(pk=i)
             try:
-                prs = Personal.objects.using(r.session["database"]).get(pk=tp.personal_id.pk,status="AC")
+                brg = Master_barang.objects.using(r.session["database"]).get(pk=tp.master_barang_id.pk,kategori_id__status="AC")
+                if brg.status == "DE":
+                    msg.append("Barang sudah tidak aktif!")
+                    continue
             except:
-                msg.append("Person sudah tidak aktif!")
+                msg.append("Kategori sudah tidak aktif!")
                 continue
+            # print(Stok_brg.objects.select_for_update().all())
+            print(brg.pk)
+            stk = Stok_brg.objects.using(r.session["database"]).select_for_update().filter(master_barang_id=brg.pk).last()
+            print(time.sleep(10))
+            return JsonResponse({"message":"success post Pengeluaran"})
+            if not stk:
+                msg.append(f"Stok tidak ada untuk <b>{brg.barang}</b>!")
+                continue
+            elif int(stk.stok) == 0:
+                msg.append(f"Stok tidak ada untuk <b>{brg.barang}</b>!")
+                continue
+            elif int(stk.stok) < int(tp.qty):
+                msg.append(f"Stok <b>{brg.barang}</b> hanya ada <b><i>{stk.stok}</b></i>!")
+                continue
+            
 
-        try:
-            ctr = Counter_bagian.objects.using(r.session["database"]).get(pk=tp.counter_id.pk,status="AC")
-        except:
-            msg.append("Counter sudah tidak aktif!")
-            continue
-        p = Pengeluaran(
-            tgl_keluar=tp.tgl_keluar,
-            qty=tp.qty,
-            counter_id=tp.counter_id,
-            master_barang_id=brg,
-            personal_id=prs,
-            divisi_id=tp.counter_id.divisi.pk,
-            status=tp.status,
-            harga_jual=tp.harga_jual
-        ).save(using=r.session["database"])
+            updateStok = int(stk.stok) - int(tp.qty)
+            if updateStok <= 0:
+                brg.status = "DE"
+            
+            prs = None
+            if not tp.personal_id:
+                prs = None
+            else:
+                try:
+                    prs = Personal.objects.using(r.session["database"]).get(pk=tp.personal_id.pk,status="AC")
+                except:
+                    msg.append("Person sudah tidak aktif!")
+                    continue
 
-        Stok_brg(
-            kode=2,
-            person=r.user,
-            tgl_transaksi=tp.tgl_keluar,
-            qty_keluar=tp.qty,
-            master_barang_id=brg,
-            stok=updateStok,
-            qty_terima=0,
-        ).save(using=r.session["database"])
+            try:
+                ctr = Counter_bagian.objects.using(r.session["database"]).get(pk=tp.counter_id.pk,status="AC")
+            except:
+                msg.append("Counter sudah tidak aktif!")
+                continue
+            p = Pengeluaran(
+                tgl_keluar=tp.tgl_keluar,
+                qty=tp.qty,
+                counter_id=tp.counter_id,
+                master_barang_id=brg,
+                personal_id=prs,
+                divisi_id=tp.counter_id.divisi.pk,
+                status=tp.status,
+                harga_jual=tp.harga_jual
+            ).save(using=r.session["database"])
+
+            Stok_brg(
+                kode=2,
+                person=r.user,
+                tgl_transaksi=tp.tgl_keluar,
+                qty_keluar=tp.qty,
+                master_barang_id=brg,
+                stok=updateStok,
+                qty_terima=0,
+            ).save(using=r.session["database"])
 
 
-        brg.save(using=r.session["database"])
-        tp.delete()
+            brg.save(using=r.session["database"])
+            tp.delete()
     if len(msg) != 0:
         return JsonResponse({"message":msg},status=400)
     else:
@@ -1565,8 +1592,6 @@ def addCounter(r):
         divisi = r.POST.get("divisi")
         if Counter_bagian.objects.using(r.session["database"]).filter(counter_bagian=counter,divisi_id=int(divisi)).exists():
             return JsonResponse({"message": "counter sudah ada!"}, status=400, safe=False)
-        print(divisi)
-        print(Divisi.objects.filter(pk=int(divisi))[0].status)
         if Divisi.objects.using(r.session["database"]).filter(pk=int(divisi),status="DE").exists():
             return JsonResponse({"message": "divisi tidak aktif"}, status=400, safe=False)
         else:
